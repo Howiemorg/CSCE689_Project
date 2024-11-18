@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .text-black-white{
+      @apply text-black dark:text-white
+    }
+    .text-white-black{
+      @apply text-white dark:text-black
+    }
+    .bg-black-white{
+      @apply bg-black dark:bg-white
+    }
+    .bg-white-black{
+      @apply bg-white dark:bg-black
+    }
+    .border-black-white{
+      @apply border-black dark:border-white
+    }
+    .border-white-black{
+      @apply border-white dark:border-black
+    }
+  }
+
+@import url('https://fonts.googleapis.com/css?family=Spectral');
+@import url("https://fonts.googleapis.com/css2?family=Comfortaa");
