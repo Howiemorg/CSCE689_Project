@@ -1,9 +1,12 @@
 import React from "react";
-import { NavLink, useRouteLoaderData } from "react-router-dom";
-import Card from "../components/UI/Card";
+import { NavLink, useMatch, useRouteLoaderData } from "react-router-dom";
 
-const HomePage = () => {
-  const topics = useRouteLoaderData("home");
+const HomePage = (props) => {
+  const homePage = useMatch("/");
+
+  let topics = useRouteLoaderData(!homePage ? "topics" : "home");
+
+  console.log(props);
 
   return (
     <div className="text-center mt-12">
@@ -12,7 +15,7 @@ const HomePage = () => {
         {topics.map((topic) => {
           return (
             <NavLink
-                to={`/topic/${topic}`}
+              to={`/topics/${topic}`}
               key={topic}
               className="w-1/2 my-16 p-3 rounded-lg m-3 items-center text-center border-black border-2 hover:bg-black hover:text-white"
             >
@@ -31,7 +34,10 @@ const loadTopics = async () => {
   const response = await fetch("/database.json");
 
   if (!response.ok || response.status !== 200) {
-    throw new Response(JSON.stringify({ message: "Could not fetch topics" }), {
+    throw new Response(JSON.stringify("Could not fetch topics."), {
+      headers: {
+        "Content-Type": "application/json; utf-8",
+      },
       status: 500,
     });
   }

@@ -3,6 +3,8 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import HomePage, { loader as TopicsLoader } from "./pages/HomePage";
 import Layout from "./pages/Layout";
 import SearchPage from "./pages/SearchPage";
+import ChooseQuestion from "./pages/ChooseQuestion";
+import Questions, { loader as QuestionsLoader } from "./pages/Questions";
 
 const router = createBrowserRouter([
   {
@@ -20,28 +22,30 @@ const router = createBrowserRouter([
             element: <SearchPage />,
             //  loader: searchLoader,
           },
-          //  {
-          //    path: ":eventId",
-          //    id: "event-detail",
-          //    loader: eventDetailLoader,
-          //    children: [
-          //      {
-          //        index: true,
-          //        element: <EventDetailPage />,
-          //        action: deleteEventAction,
-          //      },
-          //      {
-          //        path: "edit",
-          //        element: <EditEventPage />,
-          //        action: manipulateEventAction,
-          //      },
-          //    ],
-          //  },
-          //  {
-          //    path: "new",
-          //    element: <NewEventPage />,
-          //    action: manipulateEventAction,
-          //  },
+        ],
+      },
+      {
+        path: "topics",
+        children: [
+          {
+            index: true,
+            element: <HomePage />,
+            loader: TopicsLoader,
+            id: "topics",
+          },
+          { path: ":topicId", element: <ChooseQuestion /> },
+        ],
+      },
+      {
+        path: "questions",
+        loader: QuestionsLoader,
+        id: "questions",
+        children: [
+          {
+            index: true,
+            element: <Questions />,
+          },
+          { path: ":topicId", element: <Questions /> },
         ],
       },
     ],
