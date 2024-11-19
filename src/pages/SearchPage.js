@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 const SearchPage = (props) => {
   const [topic, setTopic] = useState("");
@@ -9,7 +9,7 @@ const SearchPage = (props) => {
 
   const [page, setPage] = useState(1)
 
-  const getFilteredProducts = async () => {
+  const getFilteredProducts = useCallback(async () => {
     const response = await fetch(
       `/api/questions?q=${props.q ? props.q : ""}&page=${page}&topic=${topic}&difficulty=${difficulty}`,
       {
@@ -23,11 +23,11 @@ const SearchPage = (props) => {
     const data = await response.json();
     setProducts(data.products);
     setNumPages(data.pages)
-  };
+  }, [difficulty, page, props.q, topic]);
 
   useEffect(() => {
     getFilteredProducts();
-  }, [page]);
+  }, [getFilteredProducts]);
 
   return (
     <div className={`bg-white-black h-full`}>
@@ -72,7 +72,7 @@ const SearchPage = (props) => {
             <button
               type="button"
               onClick={() => {
-                if (page != 1)
+                if (page !== 1)
                   setPage((prevPage) => {
                     return Math.max(prevPage - 1, 1);
                   });
@@ -84,7 +84,7 @@ const SearchPage = (props) => {
             <button
               type="button"
               onClick={() => {
-                if (numPages != page)
+                if (numPages !== page)
                   setPage((prevPage) => {
                     return Math.min(prevPage + 1, numPages);
                   });
