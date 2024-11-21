@@ -1,10 +1,15 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import {
+  RouterProvider,
+  createBrowserRouter,
+  redirect,
+} from "react-router-dom";
 
 import HomePage, { loader as TopicsLoader } from "./pages/HomePage";
 import Layout from "./pages/Layout";
 import SearchPage from "./pages/SearchPage";
 import ChooseQuestion from "./pages/ChooseQuestion";
 import Questions, { loader as QuestionsLoader } from "./pages/Questions";
+import Question from "./pages/Question";
 
 const router = createBrowserRouter([
   {
@@ -45,7 +50,25 @@ const router = createBrowserRouter([
             index: true,
             element: <Questions />,
           },
-          { path: ":topicId", element: <Questions /> },
+          {
+            path: ":topicId",
+            element: <Questions />,
+          },
+        ],
+      },
+      {
+        path: "question",
+        id: "question",
+        children: [
+          {
+            index: true,
+            element: <Questions />,
+            loader: () =>  redirect("/questions")
+          },
+          {
+            path: ":questionName",
+            element: <Question />,
+          },
         ],
       },
     ],
