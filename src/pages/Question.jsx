@@ -59,12 +59,13 @@ const Question = () => {
   };
   const handleCompile = async () => {
     const response = await fetch(
-      "https://ce.judge0.com/submissions/batch?base64_encoded=false",
+      `${process.env.RAPID_API_URL}/submissions/batch?base64_encoded=true&fields=*`,
       {
-        body: JSON.stringify({ source_code: code,
-          language_id: language.id
-         }),
+        body: JSON.stringify({ source_code: btoa(code), language_id: language.id, stdin: btoa("[0,2,1] ") }),
         headers: {
+          "x-rapidapi-key":
+            process.env.RAPID_API_KEY,
+          "x-rapidapi-host": process.env.RAPID_API_HOST,
           "Content-Type": "application/json",
         },
       }
