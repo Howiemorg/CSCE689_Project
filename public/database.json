@@ -35,7 +35,12 @@
           "Explanation": "Because nums[1] + nums[2] == 6, we return [1, 2]."
         }
       ],
-      "difficulty": "Easy"
+      "difficulty": "Easy",
+      "return_types": {
+        "cpp": "vector<int>",
+        "python": "List[int]",
+        "javascript": "number[]"
+      }
     }
   ],
   "quizzes": [
