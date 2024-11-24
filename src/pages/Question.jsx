@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CodeEditor from "../components/CodeEditor";
+import getStartFunctionCode from "../utils/getStartFunctionCode";
+import getInputAndRunFunctionCode from "../utils/getInuptAndRunFunctionCode";
 // import axios from "axios";
 // import { classnames } from "../utils/general";
 // import { languageOptions } from "../constants/languageOptions";
@@ -22,20 +24,29 @@ const languageOptions = [
   { id: 92, name: "Python", value: "python" },
 ];
 
-const javascriptDefault = `// some comment`;
-
 const Question = () => {
   const location = useLocation();
   const question = location.state || {};
-  console.log(question);
 
-  const [code, setCode] = useState(javascriptDefault);
   const [customInput, setCustomInput] = useState("");
   // const [outputDetails, setOutputDetails] = useState(null);
   const [processing, setProcessing] = useState(null);
   const [theme, setTheme] = useState("vs-dark");
   const [language, setLanguage] = useState(languageOptions[0]);
 
+  const [code, setCode] = useState(() => {
+    console.log("DEFAULT")
+    console.log(question)
+    return getStartFunctionCode(
+      "javascript",
+      question.functionName,
+      question.parameters.reduce((accumulation, val) => {
+        accumulation[val.name] = val.types[language.value];
+        return accumulation;
+      }, {}),
+      question.return_types[language.value]
+    )}
+  );
   // const enterPress = useKeyPress("Enter");
   // const ctrlPress = useKeyPress("Control");
 
@@ -58,18 +69,40 @@ const Question = () => {
     }
   };
   const handleCompile = async () => {
+    const languageValue = language.value;
+    const judge0Code = getInputAndRunFunctionCode(
+      languageValue,
+      question.functionName,
+      question.parameters.reduce((accumulation, val) => {
+        accumulation[val.name] = val.types[languageValue];
+        return accumulation;
+      }, {}),
+      question.return_types[languageValue],
+      code
+    );
+    console.log(judge0Code);
+    console.log(process.env)
+    console.log("URL:", `${process.env.REACT_APP_RAPID_API_URL}/submissions?base64_encoded=true&fields=*`)
     const response = await fetch(
-      `${process.env.RAPID_API_URL}/submissions/batch?base64_encoded=true&fields=*`,
+      `${process.env.REACT_APP_RAPID_API_URL}/submissions?base64_encoded=true&fields=*`,
+
       {
-        body: JSON.stringify({ source_code: btoa(code), language_id: language.id, stdin: btoa("[0,2,1] ") }),
+        method: "POST",
+        body: JSON.stringify({
+          source_code: btoa(judge0Code),
+          language_id: language.id,
+          stdin: btoa("[0,2,1]\n3"),
+          expected_output: btoa("[0, 2, 1]\n3\n[0, 2, 1]")
+        }),
         headers: {
-          "x-rapidapi-key":
-            process.env.RAPID_API_KEY,
-          "x-rapidapi-host": process.env.RAPID_API_HOST,
+          "x-rapidapi-key": process.env.REACT_APP_RAPID_API_KEY,
+          "x-rapidapi-host": process.env.REACT_APP_RAPID_API_HOST,
           "Content-Type": "application/json",
         },
       }
     );
+
+    console.log(await response.json())
   };
 
   const checkStatus = async (token) => {
@@ -108,8 +141,6 @@ const Question = () => {
   //   });
   // };
 
-  console.log("Code:", code);
-
   return (
     <>
       {/* <ToastContainer
@@ -129,16 +160,31 @@ const Question = () => {
           <select
             value={language.value}
             onChange={(e) => {
-              const index = e.target.selectedIndex
-              console.log("index:", index)
+              const index = e.target.selectedIndex;
+              console.log("index:", index);
               const newLanguage = e.target.value;
-              localStorage.setItem(`${language}-${question.title}`, code);
+              localStorage.setItem(`${language.value}-${question.title}`, code);
+              console.log(
+                "JUST SAVED THIS:",
+                localStorage.getItem(`${language.value}-${question.title}`)
+              );
 
               const savedCode = localStorage.getItem(
                 `${newLanguage}-${question.title}`
               );
-              setCode(savedCode ? savedCode : "// new comment");
-              console.log(savedCode);
+              setCode(
+                savedCode
+                  ? savedCode
+                  : getStartFunctionCode(
+                      newLanguage,
+                      question.functionName,
+                      question.parameters.reduce((accumulation, val) => {
+                        accumulation[val.name] = val.types[newLanguage];
+                        return accumulation;
+                      }, {}),
+                      question.return_types[newLanguage]
+                    )
+              );
               setLanguage(languageOptions[index]);
             }}
           >

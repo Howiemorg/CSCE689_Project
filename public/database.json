@@ -4,6 +4,7 @@
     {
       "topic": "Arrays",
       "title": "Two Sum",
+      "functionName": "twoSum",
       "descriptions": "Given an array...",
       "parameters": [
         {
