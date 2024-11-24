@@ -2,12 +2,6 @@ import React, { useEffect, useState } from "react";
 import CodeEditor from "../components/CodeEditor";
 import getStartFunctionCode from "../utils/getStartFunctionCode";
 import getInputAndRunFunctionCode from "../utils/getInuptAndRunFunctionCode";
-// import axios from "axios";
-// import { classnames } from "../utils/general";
-// import { languageOptions } from "../constants/languageOptions";
-
-// import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
 
 // import { defineTheme } from "../lib/defineTheme";
 // import useKeyPress from "../hooks/useKeyPress";
@@ -17,6 +11,7 @@ import getInputAndRunFunctionCode from "../utils/getInuptAndRunFunctionCode";
 // import OutputDetails from "./OutputDetails";
 // import ThemeDropdown from "./ThemeDropdown";
 import { useLocation } from "react-router-dom";
+import OutputWindow from "../components/OutputWindow";
 
 const languageOptions = [
   { id: 97, name: "JavaScript", value: "javascript" },
@@ -29,14 +24,14 @@ const Question = () => {
   const question = location.state || {};
 
   const [customInput, setCustomInput] = useState("");
-  // const [outputDetails, setOutputDetails] = useState(null);
+  const [outputDetails, setOutputDetails] = useState(null);
   const [processing, setProcessing] = useState(null);
   const [theme, setTheme] = useState("vs-dark");
   const [language, setLanguage] = useState(languageOptions[0]);
 
   const [code, setCode] = useState(() => {
-    console.log("DEFAULT")
-    console.log(question)
+    console.log("DEFAULT");
+    console.log(question);
     return getStartFunctionCode(
       "javascript",
       question.functionName,
@@ -45,8 +40,8 @@ const Question = () => {
         return accumulation;
       }, {}),
       question.return_types[language.value]
-    )}
-  );
+    );
+  });
   // const enterPress = useKeyPress("Enter");
   // const ctrlPress = useKeyPress("Control");
 
@@ -69,6 +64,8 @@ const Question = () => {
     }
   };
   const handleCompile = async () => {
+    setProcessing(true);
+
     const languageValue = language.value;
     const judge0Code = getInputAndRunFunctionCode(
       languageValue,
@@ -80,9 +77,7 @@ const Question = () => {
       question.return_types[languageValue],
       code
     );
-    console.log(judge0Code);
-    console.log(process.env)
-    console.log("URL:", `${process.env.REACT_APP_RAPID_API_URL}/submissions?base64_encoded=true&fields=*`)
+
     const response = await fetch(
       `${process.env.REACT_APP_RAPID_API_URL}/submissions?base64_encoded=true&fields=*`,
 
@@ -92,7 +87,7 @@ const Question = () => {
           source_code: btoa(judge0Code),
           language_id: language.id,
           stdin: btoa("[0,2,1]\n3"),
-          expected_output: btoa("[0, 2, 1]\n3\n[0, 2, 1]")
+          expected_output: btoa(`[0, 2, 1]\n3\n[0, 2, 1]`),
         }),
         headers: {
           "x-rapidapi-key": process.env.REACT_APP_RAPID_API_KEY,
@@ -102,11 +97,44 @@ const Question = () => {
       }
     );
 
-    console.log(await response.json())
+    const token = (await response.json()).token;
+
+    checkStatus(token);
   };
 
   const checkStatus = async (token) => {
-    // We will come to the implementation later in the code
+    const url = `${process.env.REACT_APP_RAPID_API_URL}/submissions/${token}?base64_encoded=true&fields=*`;
+    const options = {
+      method: "GET",
+      headers: {
+        "x-rapidapi-key": process.env.REACT_APP_RAPID_API_KEY,
+        "x-rapidapi-host": process.env.REACT_APP_RAPID_API_HOST,
+      },
+    };
+
+    try {
+      const response = await fetch(url, options);
+      const result = await response.text();
+      let statusId = response.data.status?.id;
+
+      if (statusId === 1 || statusId === 2) {
+        setTimeout(() => {
+          checkStatus(token);
+        }, 2000);
+        return;
+      } else {
+        setProcessing(false);
+        setOutputDetails(response.data);
+        // showSuccessToast(`Compiled Successfully!`);
+        console.log("response.data", response.data);
+        console.log(result);
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    setProcessing(false);
   };
 
   function handleThemeChange(th) {
@@ -118,43 +146,8 @@ const Question = () => {
   //   );
   // }, []);
 
-  // const showSuccessToast = (msg) => {
-  //   toast.success(msg || `Compiled Successfully!`, {
-  //     position: "top-right",
-  //     autoClose: 1000,
-  //     hideProgressBar: false,
-  //     closeOnClick: true,
-  //     pauseOnHover: true,
-  //     draggable: true,
-  //     progress: undefined,
-  //   });
-  // };
-  // const showErrorToast = (msg) => {
-  //   toast.error(msg || `Something went wrong! Please try again.`, {
-  //     position: "top-right",
-  //     autoClose: 1000,
-  //     hideProgressBar: false,
-  //     closeOnClick: true,
-  //     pauseOnHover: true,
-  //     draggable: true,
-  //     progress: undefined,
-  //   });
-  // };
-
   return (
     <>
-      {/* <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      /> */}
-      <div className="h-4 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500"></div>
       <div className="flex flex-row">
         <div className="px-4 py-2">
           <select
@@ -210,7 +203,14 @@ const Question = () => {
         </div>
 
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
-          {/* <OutputWindow outputDetails={outputDetails} /> */}
+          <OutputWindow
+            output={outputDetails}
+            inputs={question.parameters.reduce((accumulation, val) => {
+              accumulation[val.name] = val.tests[0];
+              return accumulation;
+            }, {})}
+            expected_output={}
+          />
           <div className="flex flex-col items-end">
             {/* <CustomInput
               customInput={customInput}

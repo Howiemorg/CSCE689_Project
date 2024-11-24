@@ -31,16 +31,6 @@ const getInputAndRunFunctionCode = (
   } else if (langauge === "cpp") {
     input += "#include <bits/stdc++.h>\nusing namespace std;\n";
 
-    input += `template <typename T>
-void printVector(vector<T> vec){
-    int n = vec.size() - 1;
-    cout << "[";
-    for(int i = 0; i <= n; ++i){
-        // cout << i << " N: " << n << "\\n";
-        cout << vec[i] << (i == n  ? ']' : ',');
-    }
-}`;
-
     input +=
       code +
       `\nint main() {
@@ -57,10 +47,10 @@ void printVector(vector<T> vec){
         input += `vector<${type}> ${key};
     
     cin >> input;
-    cout << input << "\\n";
+
     pos = 1;
     prevPos = 1;
-    while ((pos = input.find(',')) != string::npos){
+    while ((pos = input.find(',', prevPos)) != string::npos){
         ${key}.push_back(${
           type !== "string" ? "sto" + type[0] : ""
         }(input.substr(prevPos, pos-prevPos)));
@@ -70,14 +60,19 @@ void printVector(vector<T> vec){
           type !== "string" ? "sto" + type[0] : ""
         }(input.substr(prevPos, input.length() - 1 - prevPos)));\n`;
       } else {
-        input += `\tcin >> input;
+        input += `cin >> input;
     int target = ${type !== "string" ? "sto" + type[0] : ""}(input);\n`;
       }
       functionCall += `${key}${index === numParameters ? ")" : ","}`;
     });
 
     if (returnType.startsWith("vector")) {
-      input += `\tprintVector(${functionCall});`;
+      input += `${returnType} ret = ${functionCall};
+      int n = ret.size() - 1;
+      cout << "[";
+      for(int i = 0; i <= n; ++i){
+        cout << ret[i] << (i == n ? "]\\n" : ", "); 
+      }`;
     } else {
       input += `\tcout << ${functionCall};`;
     }
@@ -87,23 +82,30 @@ void printVector(vector<T> vec){
   } else if (langauge === "javascript") {
     input +=
       code +
-      `\\nprocess.stdin.on("data", data => {\\nconst preprocessed_data = data.toString().trim().split("\\\\n")\\n`;
+      `\nprocess.stdin.on("data", data => {\nconst preprocessed_data = data.toString().trim().split("\\n")\n`;
     let functionCall = functionName + "(";
     parameterNames.forEach((key, index) => {
       let type = String(parameterNamesToTypes[key]);
       if (type.endsWith("[]")) {
         type = type.substring(0, type.length - 2);
-        input += `const arr = preprocessed_data[${index}];\\nconst ${key} = arr.substring(1, arr.length-1).split(",").map((val) => ${capitalize(
+        input += `const arr = preprocessed_data[${index}];\nconst ${key} = arr.substring(1, arr.length-1).split(",").map((val) => {\n\treturn ${capitalize(
           type
-        )}(val))\\n`;
+        )}(val)})\n`;
       } else {
         input += `const ${key} = ${capitalize(
           type
-        )}(preprocessed_data[${index}])\\n`;
+        )}(preprocessed_data[${index}])\n`;
       }
       functionCall += `${key}${index === numParameters ? ")" : ","}`;
     });
-    input += `console.log(${functionCall})\\n}\\n);`;
+    if (returnType.endsWith("[]")) {
+      input += `ret = ${functionCall};
+      process.stdout.write("[");
+      ret.map((val, indx) => process.stdout.write(val + (indx === ret.length - 1 ? "]\\n" : ", ")));`;
+    } else {
+      input += `console.log(${functionCall});`;
+    }
+    input += `\n});`;
     return input;
   }
 };
