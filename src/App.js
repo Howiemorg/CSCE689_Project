@@ -10,6 +10,8 @@ import SearchPage from "./pages/SearchPage";
 import ChooseQuestion from "./pages/ChooseQuestion";
 import Questions, { loader as QuestionsLoader } from "./pages/Questions";
 import Question from "./pages/Question";
+import Quizzes, { loader as QuizzesLoader } from "./pages/Quizzes";
+import Quiz from "./pages/Quiz";
 
 const router = createBrowserRouter([
   {
@@ -63,11 +65,41 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Questions />,
-            loader: () =>  redirect("/questions")
+            loader: () => redirect("/questions"),
           },
           {
             path: ":questionName",
             element: <Question />,
+          },
+        ],
+      },
+      {
+        path: "quizzes",
+        loader: QuizzesLoader,
+        id: "quizzes",
+        children: [
+          {
+            index: true,
+            element: <Quizzes />,
+          },
+          {
+            path: ":topicId",
+            element: <Quizzes />,
+          },
+        ],
+      },
+      {
+        path: "quiz",
+        id: "quiz",
+        children: [
+          {
+            index: true,
+            element: <Quizzes />,
+            loader: () => redirect("/quizzes"),
+          },
+          {
+            path: ":quizName",
+            element: <Quiz />,
           },
         ],
       },

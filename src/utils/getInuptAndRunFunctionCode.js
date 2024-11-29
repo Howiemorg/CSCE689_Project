@@ -68,6 +68,9 @@ const getInputAndRunFunctionCode = (
 
     if (returnType.startsWith("vector")) {
       input += `${returnType} ret = ${functionCall};
+      if(!ret){
+        return;
+      }
       int n = ret.size() - 1;
       cout << "[";
       for(int i = 0; i <= n; ++i){
@@ -100,6 +103,9 @@ const getInputAndRunFunctionCode = (
     });
     if (returnType.endsWith("[]")) {
       input += `ret = ${functionCall};
+      if(!ret){
+        return;
+      }
       process.stdout.write("[");
       ret.map((val, indx) => process.stdout.write(val + (indx === ret.length - 1 ? "]\\n" : ", ")));`;
     } else {

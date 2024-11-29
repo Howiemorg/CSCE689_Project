@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import CodeEditor from "../components/CodeEditor";
 import getStartFunctionCode from "../utils/getStartFunctionCode";
 import getInputAndRunFunctionCode from "../utils/getInuptAndRunFunctionCode";
+import { ArrowPathIcon } from "@heroicons/react/20/solid";
 
 // import { defineTheme } from "../lib/defineTheme";
 // import useKeyPress from "../hooks/useKeyPress";
-// import Footer from "./Footer";
-// import OutputWindow from "./OutputWindow";
 // import CustomInput from "./CustomInput";
-// import OutputDetails from "./OutputDetails";
 // import ThemeDropdown from "./ThemeDropdown";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import OutputWindow from "../components/OutputWindow";
+import generateCodeQuestion from "../utils/LLM/generateCodeQuestions";
 
 const languageOptions = [
   { id: 97, name: "JavaScript", value: "javascript" },
@@ -20,14 +19,19 @@ const languageOptions = [
 ];
 
 const Question = () => {
+  const navigate = useNavigate();
   const location = useLocation();
-  const question = location.state || {};
+  const question = useMemo(() => location.state || {}, [location.state]);
+  console.log(question);
+  console.log(question.title);
 
   const [customInput, setCustomInput] = useState("");
   const [outputDetails, setOutputDetails] = useState(null);
   const [processing, setProcessing] = useState(null);
   const [theme, setTheme] = useState("vs-dark");
   const [language, setLanguage] = useState(languageOptions[0]);
+  const [generating, setGenerating] = useState(false);
+  console.log(generating);
 
   const [code, setCode] = useState(() => {
     console.log("DEFAULT");
@@ -36,10 +40,10 @@ const Question = () => {
       "javascript",
       question.functionName,
       question.parameters.reduce((accumulation, val) => {
-        accumulation[val.name] = val.types[language.value];
+        accumulation[val.name] = val.types["javascript"];
         return accumulation;
       }, {}),
-      question.return_types[language.value]
+      question.output.return_types["javascript"]
     );
   });
   // const enterPress = useKeyPress("Enter");
@@ -52,6 +56,21 @@ const Question = () => {
   //     handleCompile();
   //   }
   // }, [ctrlPress, enterPress]);
+
+  useEffect(() => {
+    setCode(
+      getStartFunctionCode(
+        "javascript",
+        question.functionName,
+        question.parameters.reduce((accumulation, val) => {
+          accumulation[val.name] = val.types["javascript"];
+          return accumulation;
+        }, {}),
+        question.output.return_types["javascript"]
+      )
+    );
+  }, [question]);
+
   const onChange = (action, data) => {
     switch (action) {
       case "code": {
@@ -74,9 +93,12 @@ const Question = () => {
         accumulation[val.name] = val.types[languageValue];
         return accumulation;
       }, {}),
-      question.return_types[languageValue],
+      question.output.return_types[languageValue],
       code
     );
+
+    const expected_output = question.output.tests[0];
+    const inputs = question.parameters.map((parameter) => parameter.tests[0]);
 
     const response = await fetch(
       `${process.env.REACT_APP_RAPID_API_URL}/submissions?base64_encoded=true&fields=*`,
@@ -86,8 +108,13 @@ const Question = () => {
         body: JSON.stringify({
           source_code: btoa(judge0Code),
           language_id: language.id,
-          stdin: btoa("[0,2,1]\n3"),
-          expected_output: btoa(`[0, 2, 1]\n3\n[0, 2, 1]`),
+          stdin: btoa(
+            `${inputs.reduce(
+              (accumulation, curVal) => accumulation + curVal + "\n",
+              ""
+            )}`
+          ),
+          expected_output: btoa(`${expected_output}`),
         }),
         headers: {
           "x-rapidapi-key": process.env.REACT_APP_RAPID_API_KEY,
@@ -98,7 +125,7 @@ const Question = () => {
     );
 
     const token = (await response.json()).token;
-
+    console.log(token);
     checkStatus(token);
   };
 
@@ -113,9 +140,10 @@ const Question = () => {
     };
 
     try {
-      const response = await fetch(url, options);
-      const result = await response.text();
-      let statusId = response.data.status?.id;
+      let response = await fetch(url, options);
+      response = await response.json();
+
+      let statusId = response.status?.id;
 
       if (statusId === 1 || statusId === 2) {
         setTimeout(() => {
@@ -124,10 +152,7 @@ const Question = () => {
         return;
       } else {
         setProcessing(false);
-        setOutputDetails(response.data);
-        // showSuccessToast(`Compiled Successfully!`);
-        console.log("response.data", response.data);
-        console.log(result);
+        setOutputDetails(response);
         return;
       }
     } catch (error) {
@@ -140,14 +165,37 @@ const Question = () => {
   function handleThemeChange(th) {
     // We will come to the implementation later in the code
   }
-  // useEffect(() => {
-  //   defineTheme("oceanic-next").then((_) =>
-  //     setTheme({ value: "oceanic-next", label: "Oceanic Next" })
-  //   );
-  // }, []);
 
   return (
     <>
+      <div className="flex flex-col w-[70%] ml-5 mt-5">
+        <div className="flex align-text-bottom justify-items-end text-xl font-bold">
+          {question.title}
+          {"    "}(
+          <p
+            className={`${
+              question.difficulty === "Easy"
+                ? "text-green-500"
+                : question.difficulty === "Medium"
+                ? "text-yellow-400"
+                : question.difficulty === "Hard" && "text-red-700"
+            }`}
+          >
+            {question.difficulty}
+          </p>
+          )
+        </div>
+        <p>{question.description}</p>
+        <div>
+          {question.examples.map((example) => (
+            <>
+              <p>Input: {example.input}</p>
+              <p>Output: {example.output}</p>
+              <p>Explanation: {example.explanation}</p>
+            </>
+          ))}
+        </div>
+      </div>
       <div className="flex flex-row">
         <div className="px-4 py-2">
           <select
@@ -175,7 +223,7 @@ const Question = () => {
                         accumulation[val.name] = val.types[newLanguage];
                         return accumulation;
                       }, {}),
-                      question.return_types[newLanguage]
+                      question.output.return_types[newLanguage]
                     )
               );
               setLanguage(languageOptions[index]);
@@ -205,13 +253,12 @@ const Question = () => {
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
           <OutputWindow
             output={outputDetails}
-            inputs={question.parameters.reduce((accumulation, val) => {
-              accumulation[val.name] = val.tests[0];
-              return accumulation;
+            expected_output={question.output.tests[0]}
+            inputs={question.parameters.reduce((accumulation, parameter) => {
+              return { ...accumulation, [parameter.name]: parameter.tests[0] };
             }, {})}
-            expected_output={}
           />
-          <div className="flex flex-col items-end">
+          <div className="flex flex-col items-end mt-4 h-full">
             {/* <CustomInput
               customInput={customInput}
               setCustomInput={setCustomInput}
@@ -227,10 +274,24 @@ const Question = () => {
               {processing ? "Processing..." : "Compile and Execute"}
             </button>
           </div>
-          {/* {outputDetails && <OutputDetails outputDetails={outputDetails} />} */}
+          <div className="self-center mt-10">
+            <button
+              className="p-2 border-black border-2 rounded-lg flex"
+              onClick={async () => {
+                setGenerating(true);
+                await generateCodeQuestion([question], navigate);
+                setGenerating(false);
+              }}
+              disabled={generating}
+            >
+              Generate Similar Question{" "}
+              <p className={`ml-3 ${generating && "animate-spin"}`}>
+                <ArrowPathIcon height={25} width={25} />
+              </p>
+            </button>
+          </div>
         </div>
-      </div>
-      {/* <Footer /> */}
+      </div>{" "}
     </>
   );
 };

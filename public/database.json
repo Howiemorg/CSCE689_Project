@@ -5,7 +5,7 @@
       "topic": "Arrays",
       "title": "Two Sum",
       "functionName": "twoSum",
-      "descriptions": "Given an array...",
+      "description": "Given an array...",
       "parameters": [
         {
           "name": "nums",
@@ -13,7 +13,8 @@
             "cpp": "vector<int>",
             "python": "List[int]",
             "javascript": "number[]"
-          }
+          },
+          "tests": ["[2,7,11,15]", "[3,2,4]", "[0,0,0]", "[1,4,-2]"]
         },
         {
           "name": "target",
@@ -21,38 +22,158 @@
             "cpp": "int",
             "python": "int",
             "javascript": "number"
-          }
+          },
+          "tests": ["9", "7", "0", "-2"]
         }
       ],
-      "tests": [
-        { "nums": "[2,7,11,15]", "target": "9", "expected_output": "[0, 1]" },
-        { "nums": "[3,2,4]", "target": "7", "expected_output": "[0, 2]" },
-        { "nums": "[0,0,0]", "target": "0", "expected_output": "[0, 1]" },
-        { "nums": "[1,4,-2]", "target": "-2", "expected_output": "[]" }
-      ],
+      "output": {
+        "return_types": {
+          "cpp": "vector<int>",
+          "python": "List[int]",
+          "javascript": "number[]"
+        },
+        "tests": ["[0, 1]", "[0, 2]", "[0, 1]", "[]"]
+      },
       "examples": [
         {
           "input": "nums = [2,7,11,15], target = 9",
-          "Output": "[0,1]",
-          "Explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+          "output": "[0,1]",
+          "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
         },
         {
           "input": "nums = [3,2,4], target = 6",
-          "Output": "[1,2]",
-          "Explanation": "Because nums[1] + nums[2] == 6, we return [1, 2]."
+          "output": "[1,2]",
+          "explanation": "Because nums[1] + nums[2] == 6, we return [1, 2]."
         }
       ],
+      "difficulty": "Easy"
+    },
+    {
+      "topic": "Arrays",
+      "description": "Given a sorted array of distinct integers and a target value, determine the index if the target is found. If not, return the index where it would be if it were inserted in order.",
       "difficulty": "Easy",
-      "return_types": {
-        "cpp": "vector<int>",
-        "python": "List[int]",
-        "javascript": "number[]"
-      }
+      "examples": [
+        {
+          "explanation": "The target 2 is not in nums. nums would look like [1,2,3,5,6] if 2 was inserted at index 1.",
+          "input": "nums = [1,3,5,6], target = 2",
+          "output": "1"
+        },
+        {
+          "explanation": "The target 7 is not in nums. nums would look like [1,3,5,6,7] if 7 was inserted at index 4.",
+          "input": "nums = [1,3,5,6], target = 7",
+          "output": "4"
+        },
+        {
+          "explanation": "The target 0 is not in nums. nums would look like [0,1,3,5,6] if 0 was inserted at index 0.",
+          "input": "nums = [1,3,5,6], target = 0",
+          "output": "0"
+        }
+      ],
+      "functionName": "searchInsert",
+      "output": {
+        "return_types": {
+          "cpp": "int",
+          "javascript": "number",
+          "python": "int"
+        },
+        "tests": ["2", "1", "4", "0"]
+      },
+      "parameters": [
+        {
+          "name": "nums",
+          "tests": ["[1,3,5,6]", "[1,3,5,6]", "[1,3,5,6]", "[1,3,5,6]"],
+          "types": {
+            "cpp": "vector<int>",
+            "javascript": "number[]",
+            "python": "List[int]"
+          }
+        },
+        {
+          "name": "target",
+          "tests": ["5", "2", "7", "0"],
+          "types": { "cpp": "int", "javascript": "number", "python": "int" }
+        }
+      ],
+      "title": "Search Insert Position"
     }
   ],
   "quizzes": [
     {
-      "topic": "Arrays"
+      "topic": "Arrays",
+      "title": "Introduction to Arrays",
+      "difficulty": "Easy",
+      "questions": [
+        {
+          "question": "What is the first index of arrays numbered as? Choose the most common index.",
+          "choices": ["0", "1", "-1", "Length of the array"],
+          "answer": "0"
+        },
+        {
+          "question": "The size of an array should never be ______",
+          "choices": ["Negative", "0", "A whole number", "Positive"],
+          "answer": "Negative"
+        },
+        {
+          "question": "How do you access an element in an array?",
+          "choices": [
+            "A dot .",
+            "Paranthesis ()",
+            "Curly Braces {}",
+            "Square Braces []"
+          ],
+          "answer": "Square Braces []"
+        },
+        {
+          "question": "Given arr = [1,2,3,1,9], what element is at arr[3]?",
+          "choices": ["1", "3", "9", "An error is thrown"],
+          "answer": "1"
+        },
+        {
+          "question": "What does a 2D array represent?",
+          "choices": ["Vector", "Matrix", "Tree", "Graph"],
+          "answer": "Matrix"
+        },
+        {
+          "question": "Given arr = [1,2,3,1,9], what element is at arr[5]?",
+          "choices": ["2", "1", "9", "An error is thrown"],
+          "answer": "0"
+        },
+        {
+          "question": "How do you get the last element of an array in C++?",
+          "choices": [
+            "arr[-1]",
+            "arr[arr.length()]",
+            "arr[arr.length()-1]",
+            "arr[arr.length]"
+          ],
+          "answer": "arr[arr.length()-1]"
+        },
+        {
+          "question": "What does a 1D array represent?",
+          "choices": ["Vector", "Matrix", "Tree", "Graph"],
+          "answer": "Vector"
+        },
+        {
+          "question": "How many rows and columns are in this array? arr[2][5]",
+          "choices": [
+            "2 rows, 2 columns",
+            "5 rows, 5 columns",
+            "5 rows, 2 columns",
+            "2 rows, 5 columns"
+          ],
+          "answer": "2 rows, 5 columns"
+        },
+        {
+          "question": "Can you remove any element from an array?",
+          "choices": [
+            "No, you can only remove the last element",
+            "No, you can only remove the first element",
+            "Yes, as long as there are more than zero elements",
+            "Yes, as long as there is more than one element"
+          ],
+          "answer": "Yes, as long as there are more than zero elements"
+        }
+      ]
     }
   ]
 }
