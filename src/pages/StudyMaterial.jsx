@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useParams } from "react-router-dom";
@@ -30,24 +30,30 @@ const StudyMaterial = () => {
   const [generating, setGenerating] = useState(false);
   const windowRef = useRef(null);
   const { topicId } = useParams();
+  const lastTopicId = useRef(null);
 
-  useEffect(() => {
-    const getInitialMaterial = async () => {
-      setGenerating(true);
+  const getInitialMaterial = async () => {
+    if (lastTopicId.current === topicId || generating) {
+      return;
+    }
 
-      const response = await chat.sendMessage(
-        `Please generate study material covering the ${topicId} topic.`
-      );
+    setGenerating(true);
+    lastTopicId.current = topicId;
 
-      const text = response.response.text();
+    const response = await chat.sendMessage(
+      `Please generate study material covering the ${topicId} topic.`
+    );
 
-      setSystemHistory((prevHistory) => [...prevHistory, text]);
+    const text = response.response.text();
 
-      setGenerating(false);
-    };
+    setSystemHistory((prevHistory) => [...prevHistory, text]);
 
+    setGenerating(false);
+  };
+
+  if (lastTopicId.current !== topicId) {
     getInitialMaterial();
-  }, [topicId]);
+  }
 
   const sendQuery = async (event) => {
     if (event.key !== "Enter" || generating || event.shiftKey) {
@@ -82,13 +88,11 @@ const StudyMaterial = () => {
       >
         {systemHistory.map((system, index) => {
           return (
-            <>
-              <div className="mr-[10%] my-5">
-                <p className="inline-block text-white py-2 px-6 bg-black rounded-3xl whitespace-pre-wrap break">
-                  {system ? system : "Generating..."}
-                </p>
-              </div>
-            </>
+            <div className="mr-[10%] my-5" key={index}>
+              <p className="inline-block text-white py-2 px-6 bg-black rounded-3xl whitespace-pre-wrap break">
+                {system ? system : "Generating..."}
+              </p>
+            </div>
           );
         })}
         {generating && (
