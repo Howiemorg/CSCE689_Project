@@ -31,23 +31,23 @@ const StudyMaterial = () => {
   const windowRef = useRef(null);
   const { topicId } = useParams();
 
-//   useEffect(() => {
-//     const getInitialMaterial = async () => {
-//       setGenerating(true);
+  useEffect(() => {
+    const getInitialMaterial = async () => {
+      setGenerating(true);
 
-//       const response = await chat.sendMessage(
-//         `Please generate study material covering the ${topicId} topic.`
-//       );
+      const response = await chat.sendMessage(
+        `Please generate study material covering the ${topicId} topic.`
+      );
 
-//       const text = response.response.text();
+      const text = response.response.text();
 
-//       setSystemHistory((prevHistory) => [...prevHistory, text]);
+      setSystemHistory((prevHistory) => [...prevHistory, text]);
 
-//       setGenerating(false);
-//     };
+      setGenerating(false);
+    };
 
-//     getInitialMaterial();
-//   }, [topicId]);
+    getInitialMaterial();
+  }, [topicId]);
 
   const sendQuery = async (event) => {
     if (event.key !== "Enter" || generating || event.shiftKey) {
