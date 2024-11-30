@@ -1,14 +1,15 @@
 import React from "react";
 import MainNavigation from "../components/MainNavigation";
 import { Outlet } from "react-router-dom";
+import QuestionWindow from "../components/QuestionWindow";
 
 const Layout = (props) => {
   return (
-    <div className=" flex-col">
+    <div className=" flex-col h-full">
       <MainNavigation />
-      <h1 className="text-black-white bg-white-black text-center text-4xl font-bold font-[Georgia] tracking-tight sm:text-6xl pt-20">
-        LLM Educate
-      </h1>
+      <div className="text-black-white bg-white-black tracking-tight p-2 h-72">
+        <QuestionWindow />
+      </div>
       <main>
         <Outlet />
       </main>
