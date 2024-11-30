@@ -61,7 +61,7 @@ const QuestionWindow = () => {
   return (
     <div className="flex flex-row h-full">
       <button
-        className="py-2 px-8 h-12 self-center hover:bg-black hover:text-white hover:border-white border-black text-black bg-white border-2 rounded-md"
+        className="py-2 px-6 h-18 md:h-12 self-center hover:bg-black hover:text-white hover:border-white border-black text-black bg-white border-2 rounded-md"
         onClick={() => {
           setUserHistory([]);
           setSystemHistory([]);

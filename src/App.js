@@ -12,6 +12,7 @@ import Questions, { loader as QuestionsLoader } from "./pages/Questions";
 import Question from "./pages/Question";
 import Quizzes, { loader as QuizzesLoader } from "./pages/Quizzes";
 import Quiz from "./pages/Quiz";
+import StudyMaterial from "./pages/StudyMaterial";
 
 const router = createBrowserRouter([
   {
@@ -100,6 +101,20 @@ const router = createBrowserRouter([
           {
             path: ":quizName",
             element: <Quiz />,
+          },
+        ],
+      },
+      {
+        path: "study",
+        id: "study",
+        children: [
+          {
+            index: true,
+            element: <StudyMaterial />,
+          },
+          {
+            path: ":topicId",
+            element: <StudyMaterial />,
           },
         ],
       },
