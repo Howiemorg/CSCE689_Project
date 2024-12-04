@@ -31,22 +31,23 @@ const HomePage = (props) => {
 export default HomePage;
 
 const loadTopics = async () => {
-  const response = await fetch("http://localhost:8000/topics/");
-  console.log(response)
-  const json = await response.json();
-  console.log(json)
+  try {
+    const response = await fetch("http://localhost:8000/topics/");
+    const json = await response.json();
 
-  if (!response.ok || response.status !== 200) {
-    throw new Response(json.error, {
-      headers: {
-        "Content-Type": "application/json; utf-8",
-      },
-      status: response.status,
-    });
+    if (!response.ok || response.status !== 200) {
+      throw new Response(json.error, {
+        headers: {
+          "Content-Type": "application/json; utf-8",
+        },
+        status: response.status,
+      });
+    }
+
+    return json.topics;
+  } catch (e) {
+    return [];
   }
-
-  
-  return json.topics;
 };
 
 export const loader = async ({ request, params }) => {

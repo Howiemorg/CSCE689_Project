@@ -6,13 +6,15 @@ import {
 
 import HomePage, { loader as TopicsLoader } from "./pages/HomePage";
 import Layout from "./pages/Layout";
-import SearchPage from "./pages/SearchPage";
+// import SearchPage from "./pages/SearchPage";
 import ChooseQuestion from "./pages/ChooseQuestion";
 import Questions, { loader as QuestionsLoader } from "./pages/Questions";
 import Question from "./pages/Question";
 import Quizzes, { loader as QuizzesLoader } from "./pages/Quizzes";
 import Quiz from "./pages/Quiz";
 import StudyMaterial from "./pages/StudyMaterial";
+import LoginPage from "./pages/LoginPage";
+import SignUp from "./pages/SignUp";
 
 const router = createBrowserRouter([
   {
@@ -21,17 +23,19 @@ const router = createBrowserRouter([
     //  errorElement: <ErrorPage />,
     children: [
       { index: true, element: <HomePage />, loader: TopicsLoader, id: "home" },
-      {
-        path: "search",
-        //  element: <SearchPage />,
-        children: [
-          {
-            index: true,
-            element: <SearchPage />,
-            //  loader: searchLoader,
-          },
-        ],
-      },
+      // {
+      //   path: "search",
+      //   //  element: <SearchPage />,
+      //   children: [
+      //     {
+      //       index: true,
+      //       element: <SearchPage />,
+      //       //  loader: searchLoader,
+      //     },
+      //   ],
+      // },
+      { path: "login", element: <LoginPage /> },
+      { path: "signup", element: <SignUp /> },
       {
         path: "topics",
         children: [

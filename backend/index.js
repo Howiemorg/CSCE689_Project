@@ -21,12 +21,12 @@ app.get("/test-db", async (req, res) => {
   getMongoDB();
 });
 
-// import users from "./routes/user_route.js";
+import users from "./routes/user_route.js";
 import questions from "./routes/question_route.js";
 import quizzes from "./routes/quiz_route.js";
 import topics from "./routes/topics_route.js"
 
-// app.use("/users", users);
+app.use("/users", users);
 app.use("/topics", topics);
 app.use("/quizzes", quizzes);
 app.use("/questions", questions);
