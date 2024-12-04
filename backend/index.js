@@ -13,7 +13,7 @@ app.use(
   })
 );
 
-const port = 3000;
+const port = 8000;
 const conn = await getMongoDB();
 conn.co;
 // gets all the user table information
@@ -24,8 +24,10 @@ app.get("/test-db", async (req, res) => {
 // import users from "./routes/user_route.js";
 import questions from "./routes/question_route.js";
 import quizzes from "./routes/quiz_route.js";
+import topics from "./routes/topics_route.js"
 
 // app.use("/users", users);
+app.use("/topics", topics);
 app.use("/quizzes", quizzes);
 app.use("/questions", questions);
 

@@ -21,7 +21,7 @@ class QuizController {
       throw new HttpException(404, "Couldn't find quizzes");
     }
 
-    res.json(quizzes);
+    res.json({ quizzes: quizzes });
   };
 
   createQuiz = async (req, res, next) => {

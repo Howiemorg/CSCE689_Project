@@ -21,7 +21,7 @@ class QuestionController {
       throw new HttpException(404, "Couldn't find questions");
     }
 
-    res.json(questions);
+    res.json({questions: questions});
   };
 
   createQuestion = async (req, res, next) => {
@@ -46,8 +46,6 @@ class QuestionController {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
     }
-
-    console.log(questions)
 
     res.json({questions: questions});
   };

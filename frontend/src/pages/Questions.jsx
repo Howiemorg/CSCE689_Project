@@ -7,7 +7,7 @@ const Questions = () => {
 
   return (
     <div className="flex flex-col text-center mt-12">
-      <h1 className="text-3xl">Coding Questions {topicId && `for {topicId}`}</h1>
+      <h1 className="text-3xl">Coding Questions {topicId && `for ${topicId}`}</h1>
       <div className="flex mx-36 flex-col">
         {questions.map((question) => (
           <NavLink key={question.title} to={`/question/${question.title}`} state={question} className="flex flex-row content-between justify-between py-2 px-8 hover:bg-black  hover:text-white border-black border-2 rounded-md mt-12">
@@ -24,10 +24,11 @@ const Questions = () => {
 export default Questions;
 
 const loadQuestions = async (topic) => {
-  const response = await fetch("/database.json");
+  const response = topic ? await fetch(`http://localhost:8000/questions/getByTopic/${topic}`) : await fetch(`http://localhost:8000/questions/getAll`);
+  const json = await response.json();
 
   if (!response.ok || response.status !== 200) {
-    throw new Response(JSON.stringify("Could not fetch questions."), {
+    throw new Response(json.error, {
       headers: {
         "Content-Type": "application/json; utf-8",
       },
@@ -35,16 +36,7 @@ const loadQuestions = async (topic) => {
     });
   }
 
-  const json = await response.json();
-
-  if (!topic) {
-    return json.questions;
-  }
-
-  const questions = json.questions.filter(
-    (question) => question.topic === topic
-  );
-  return questions;
+  return json.questions;
 };
 
 export const loader = async ({ request, params }) => {

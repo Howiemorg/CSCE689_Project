@@ -31,18 +31,21 @@ const HomePage = (props) => {
 export default HomePage;
 
 const loadTopics = async () => {
-  const response = await fetch("/database.json");
+  const response = await fetch("http://localhost:8000/topics/");
+  console.log(response)
+  const json = await response.json();
+  console.log(json)
 
   if (!response.ok || response.status !== 200) {
-    throw new Response(JSON.stringify("Could not fetch topics."), {
+    throw new Response(json.error, {
       headers: {
         "Content-Type": "application/json; utf-8",
       },
-      status: 500,
+      status: response.status,
     });
   }
 
-  const json = await response.json();
+  
   return json.topics;
 };
 

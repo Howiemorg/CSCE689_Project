@@ -4,6 +4,7 @@ import { NavLink, Outlet, useParams, useRouteLoaderData } from "react-router-dom
 const Quizzes = () => {
   const quizzes = useRouteLoaderData("quizzes");
   const { topicId } = useParams();
+  
 
   return (
     <div className="flex flex-col text-center mt-12">
@@ -24,10 +25,11 @@ const Quizzes = () => {
 export default Quizzes;
 
 const loadQuizzes = async (topic) => {
-  const response = await fetch("/database.json");
+  const response = topic ? await fetch(`http://localhost:8000/quizzes/getByTopic/${topic}`) : await fetch(`http://localhost:8000/quizzes/getAll`);
+  const json = await response.json();
 
   if (!response.ok || response.status !== 200) {
-    throw new Response(JSON.stringify("Could not fetch quizzes."), {
+    throw new Response(json.error, {
       headers: {
         "Content-Type": "application/json; utf-8",
       },
@@ -35,16 +37,7 @@ const loadQuizzes = async (topic) => {
     });
   }
 
-  const json = await response.json();
-
-  if (!topic) {
-    return json.quizzes;
-  }
-
-  const quizzes = json.quizzes.filter(
-    (question) => question.topic === topic
-  );
-  return quizzes;
+  return json.quizzes;
 };
 
 export const loader = async ({ request, params }) => {
