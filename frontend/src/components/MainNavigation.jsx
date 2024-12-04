@@ -1,11 +1,12 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import SearchBar from "./SearchBar";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 const MainNavigation = () => {
   return (
     <>
-      <div as="nav" className="bg-black-white text-white-black flex justify-between">
+      <div className="bg-black-white text-white-black flex justify-between items-center">
         <div className="flex items-center flex-grow-0">
           <NavLink
             to="/"
@@ -18,7 +19,7 @@ const MainNavigation = () => {
         <div className="mx-auto flex-grow-0 ">
           <SearchBar />
         </div>
-        <div className="flex-grow-0"></div>
+        <UserCircleIcon className="w-8 h-8 mr-8 " />
       </div>
     </>
   );
