@@ -67,7 +67,10 @@ const generateCodeQuiz = async (codingQuizzes, navigate) => {
     const result =
       await model.generateContent(`Given these coding quizzes in JSON format, generate a new one similar to them following the same JSON format.
         """CODING QUIZZES QUESTIONS"""
-        ${codingQuizzes.map((quiz) => `${JSON.stringify(quiz)}\n`)}
+        ${codingQuizzes.map((codingQuiz) => {
+          const { _id, ...quiz } = codingQuiz;
+          return `${JSON.stringify(quiz)}\n`;
+        })}
         """CODING QUIZZES"""
         `);
 
@@ -76,7 +79,7 @@ const generateCodeQuiz = async (codingQuizzes, navigate) => {
 
     navigate(`/quiz/${quiz.title}`, { state: quiz });
   } catch (e) {
-    return "Failed generating quiz."
+    return "Failed generating quiz.";
   }
 };
 

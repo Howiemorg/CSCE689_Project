@@ -10,10 +10,11 @@ const Quizzes = () => {
     <div className="flex flex-col text-center mt-12">
       <h1 className="text-3xl">Coding Quizzes {topicId && `for ${topicId}`}</h1>
       <div className="flex mx-36 flex-col">
-        {quizzes.map((quizz) => (
-          <NavLink key={quizz.title} to={`/quiz/${quizz.title}`} state={quizz} className="flex flex-row content-between justify-between py-2 px-8 hover:bg-black  hover:text-white border-black border-2 rounded-md mt-12">
-            <p>{quizz.title}</p>
-            <p>{quizz.difficulty}</p>
+        {quizzes.map((quiz) => (
+          <NavLink key={quiz.title} to={`/quiz/${quiz.title}`} state={quiz} className="flex flex-row py-2 px-8 hover:bg-black  hover:text-white border-black border-2 rounded-md mt-12">
+            <p>{quiz.title}</p>
+            <p className="ml-12">{quiz.solved ? "Complete!" : "Incomplete"}</p>
+            <p className="ml-auto">{quiz.difficulty}</p>
           </NavLink>
         ))}
       </div>

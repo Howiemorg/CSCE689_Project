@@ -38,9 +38,28 @@ class QuizController {
   };
 
   getQuizByTopic = async (req, res, next) => {
-    const quizzes = await Quiz.find({
-      topic: req.params.topicId,
-    });
+    const quizzes = await Quiz.aggregate([
+      {
+        $lookup: {
+          from: "Users", // Name of Collection B
+          localField: "_id",
+          foreignField: "solvedQuestions.questionId",
+          as: "quizzesSolved",
+        },
+      },
+      {
+        $addFields: {
+          solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
+        },
+      },
+      {
+        $project: {
+          quizzesSolved: 0, // exclude unnecessary data
+        },
+      },
+    ]);
+
+    console.log(quizzes)
 
     if (!quizzes.length) {
       res.status(404).json({ error: "Couldn't find quizzes." });

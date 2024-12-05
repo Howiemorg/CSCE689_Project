@@ -160,9 +160,10 @@ const generateCodeQuestion = async (codingQuestions, navigate) => {
   const result =
     await model.generateContent(`Given these coding questions in JSON format, generate a new one similar to them following the same JSON format.
         """CODING QUESTIONS"""
-        ${codingQuestions.map(
-          (codingQuestion) => `${JSON.stringify(codingQuestion)}\n`
-        )}
+        ${codingQuestions.map((codingQuestion) => {
+          const { _id, question } = codingQuestion;
+          return `${JSON.stringify(question)}\n`;
+        })}
         """CODING QUESTIONS"""
         `);
 

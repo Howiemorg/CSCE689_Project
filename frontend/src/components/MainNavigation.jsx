@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 const MainNavigation = () => {
   const { userInfo } = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  console.log("USERINFO:", userInfo);
   const [openDropDown, setOpenDropDown] = useState(false);
   const dropDownRef = useRef(false);
 

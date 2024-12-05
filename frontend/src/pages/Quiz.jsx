@@ -10,6 +10,7 @@ const Quiz = () => {
   const location = useLocation();
   const quiz = useMemo(() => location.state || {}, [location.state]);
   const { userInfo, loading } = useSelector((state) => state.user);
+
   const dispatch = useDispatch();
 
   const [error, setError] = useState("");
@@ -24,7 +25,7 @@ const Quiz = () => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
 
   useEffect(() => {
-    setSelectedAnswers([]);
+    setSelectedAnswers(quiz.solved ? Object.values(userInfo.solvedQuestions.find((solvedQuestion => solvedQuestion.questionId === quiz._id)).answers) : []);
     setSelectedAnswer("");
     firstPage();
     setMaxPages(quiz.questions.length);
@@ -34,7 +35,7 @@ const Quiz = () => {
     dispatch(userActions.userRequest());
 
     const body = {
-      email: JSON.parse(userInfo).email,
+      email: userInfo.email,
       questionId: quiz._id,
       question: "Quizzes",
       answers: [...selectedAnswers, selectedAnswer].reduce(
@@ -62,8 +63,7 @@ const Quiz = () => {
         return false;
       }
 
-      console.log(data)
-      dispatch(userActions.userSuccess(JSON.stringify(data)));
+      dispatch(userActions.userSuccess(data));
       return true;
     } catch (err) {
       setError("Error submitting quiz.");
