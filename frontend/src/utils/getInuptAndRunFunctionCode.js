@@ -73,8 +73,12 @@ const getInputAndRunFunctionCode = (
       }
       int n = ret.size() - 1;
       cout << "[";
-      for(int i = 0; i <= n; ++i){
-        cout << ret[i] << (i == n ? "]\\n" : ", "); 
+      if(n == -1){
+        cout << "]\\n";
+      }else{
+        for(int i = 0; i <= n; ++i){
+          cout << ret[i] << (i == n ? "]\\n" : ", "); 
+        }
       }`;
     } else {
       input += `\tcout << ${functionCall};`;
@@ -107,7 +111,11 @@ const getInputAndRunFunctionCode = (
         return;
       }
       process.stdout.write("[");
-      ret.map((val, indx) => process.stdout.write(val + (indx === ret.length - 1 ? "]\\n" : ", ")));`;
+      if(ret.length === 0){
+        process.stdout.write("]")
+      }else{
+        ret.map((val, indx) => process.stdout.write(val + (indx === ret.length - 1 ? "]\\n" : ", ")));
+      }`;
     } else {
       input += `console.log(${functionCall});`;
     }

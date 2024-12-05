@@ -14,7 +14,28 @@ class QuizController {
   };
 
   getQuizzes = async (req, res, next) => {
-    const quizzes = await Quiz.find({});
+    const quizzes = await Quiz.aggregate([
+      {
+        $lookup: {
+          from: "Users",
+          localField: "_id",
+          foreignField: "solvedQuestions.questionId",
+          as: "quizzesSolved",
+        },
+      },
+      {
+        $addFields: {
+          solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
+        },
+      },
+      {
+        $project: {
+          quizzesSolved: 0, 
+        },
+      },
+    ]);
+
+    console.log(quizzes)
 
     if (!quizzes.length) {
       res.status(404).json({ error: "Couldn't find quizzes." });
@@ -39,9 +60,12 @@ class QuizController {
 
   getQuizByTopic = async (req, res, next) => {
     const quizzes = await Quiz.aggregate([
+      {$match: {
+        topic: req.params.topicId
+      }},
       {
         $lookup: {
-          from: "Users", // Name of Collection B
+          from: "Users",
           localField: "_id",
           foreignField: "solvedQuestions.questionId",
           as: "quizzesSolved",
@@ -54,7 +78,7 @@ class QuizController {
       },
       {
         $project: {
-          quizzesSolved: 0, // exclude unnecessary data
+          quizzesSolved: 0, 
         },
       },
     ]);
@@ -65,8 +89,6 @@ class QuizController {
       res.status(404).json({ error: "Couldn't find quizzes." });
       throw new HttpException(404, "Couldn't find quizzes");
     }
-
-    console.log(quizzes);
 
     res.json({ quizzes: quizzes });
   };

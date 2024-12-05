@@ -3,6 +3,7 @@ import CodeEditor from "../components/CodeEditor";
 import getStartFunctionCode from "../utils/getStartFunctionCode";
 import getInputAndRunFunctionCode from "../utils/getInuptAndRunFunctionCode";
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
+import { useDispatch, useSelector } from "react-redux";
 
 // import { defineTheme } from "../lib/defineTheme";
 // import useKeyPress from "../hooks/useKeyPress";
@@ -11,6 +12,7 @@ import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import { useLocation, useNavigate } from "react-router-dom";
 import OutputWindow from "../components/OutputWindow";
 import generateCodeQuestion from "../utils/LLM/generateCodeQuestions";
+import { userActions } from "../store/Users/user-slice";
 
 const languageOptions = [
   { id: 97, name: "JavaScript", value: "javascript" },
@@ -22,10 +24,10 @@ const Question = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const question = useMemo(() => location.state || {}, [location.state]);
-  console.log(question);
-  console.log(question.title);
+  const { userInfo, loading } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
-  // const [customInput, setCustomInput] = useState("");
+  const [error, setError] = useState("");
   const [outputDetails, setOutputDetails] = useState([]);
   const [processing, setProcessing] = useState(null);
   const [language, setLanguage] = useState(languageOptions[0]);
@@ -35,8 +37,6 @@ const Question = () => {
   const [numFailed, setNumFailed] = useState(null);
 
   const [code, setCode] = useState(() => {
-    console.log("DEFAULT");
-    console.log(question);
     return getStartFunctionCode(
       "javascript",
       question.functionName,
@@ -47,43 +47,79 @@ const Question = () => {
       question.output.return_types["javascript"]
     );
   });
-  // const enterPress = useKeyPress("Enter");
-  // const ctrlPress = useKeyPress("Control");
 
-  // useEffect(() => {
-  //   if (enterPress && ctrlPress) {
-  //     console.log("enterPress", enterPress);
-  //     console.log("ctrlPress", ctrlPress);
-  //     handleCompile();
-  //   }
-  // }, [ctrlPress, enterPress]);
+  const totalTestCases = question.output.tests.length;
 
   useEffect(() => {
+    const savedAnswers = question.solved
+      ? userInfo.solvedQuestions.find(
+          (solvedQuestion) => solvedQuestion.questionId === question._id
+        ).answers
+      : null;
     setCode(
-      getStartFunctionCode(
-        "javascript",
-        question.functionName,
-        question.parameters.reduce((accumulation, val) => {
-          accumulation[val.name] = val.types["javascript"];
-          return accumulation;
-        }, {}),
-        question.output.return_types["javascript"]
-      )
+      savedAnswers && savedAnswers["javascript"]
+        ? savedAnswers["javascript"]
+        : getStartFunctionCode(
+            "javascript",
+            question.functionName,
+            question.parameters.reduce((accumulation, val) => {
+              accumulation[val.name] = val.types["javascript"];
+              return accumulation;
+            }, {}),
+            question.output.return_types["javascript"]
+          )
     );
+
+    if (savedAnswers) {
+      Object.keys(savedAnswers).map((key) =>
+        localStorage.setItem(`${key}-${question.title}`, savedAnswers[key])
+      );
+    }
   }, [question]);
 
+  const sendSolvedQuestion = async () => {
+    dispatch(userActions.userRequest());
+
+    const body = {
+      email: userInfo.email,
+      questionId: question._id,
+      question: "Questions",
+      answers: { [language.value]: code },
+    };
+    try {
+      const response = await fetch(
+        "http://localhost:8000/users/questionSolved",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError("Error saving question.");
+        return false;
+      }
+
+      dispatch(userActions.userSuccess(data));
+      return true;
+    } catch (err) {
+      setError("Error saving question.");
+      return false;
+    }
+  };
+
   const onChange = (action, data) => {
-    switch (action) {
-      case "code": {
-        setCode(data);
-        break;
-      }
-      default: {
-        console.warn("case not handled!", action, data);
-      }
+    if (action === "code") {
+      setCode(data);
+    } else {
+      console.warn("case not handled!", action, data);
     }
   };
   const handleCompile = async () => {
+    setError("");
     setProcessing(true);
     setNumCorrect(0);
     setNumFailed(0);
@@ -101,7 +137,7 @@ const Question = () => {
     );
 
     const response = await fetch(
-      `${process.env.REACT_APP_RAPID_API_URL}/submissions/batch?base64_encoded=true&fields=*`,
+      `https://${process.env.REACT_APP_RAPID_API_URL}/submissions/batch?base64_encoded=true&fields=*`,
 
       {
         method: "POST",
@@ -132,14 +168,14 @@ const Question = () => {
     );
 
     const tokens = await response.json();
-    console.log(tokens);
     checkStatus(tokens);
   };
 
   const checkStatus = async (tokens) => {
+    setOutputDetails([]);
     for (let index = 0; index < tokens.length; ++index) {
       const token = tokens[index].token;
-      const url = `${process.env.REACT_APP_RAPID_API_URL}/submissions/${token}?base64_encoded=true&fields=*`;
+      const url = `https://${process.env.REACT_APP_RAPID_API_URL}/submissions/${token}?base64_encoded=true&fields=*`;
       const options = {
         method: "GET",
         headers: {
@@ -167,7 +203,7 @@ const Question = () => {
           }
           setOutputDetails((prevOutputDetails) => [
             ...prevOutputDetails,
-            response
+            response,
           ]);
         }
       } catch (error) {
@@ -176,9 +212,11 @@ const Question = () => {
 
       setProcessing(false);
     }
-  };
 
-  console.log("OUTPUT DETAILS", outputDetails)
+    if (numFailed === 0) {
+      await sendSolvedQuestion();
+    }
+  };
 
   return (
     <>
@@ -215,13 +253,12 @@ const Question = () => {
         value={language.value}
         onChange={(e) => {
           const index = e.target.selectedIndex;
-          console.log("index:", index);
           const newLanguage = e.target.value;
           localStorage.setItem(`${language.value}-${question.title}`, code);
-          console.log(
-            "JUST SAVED THIS:",
-            localStorage.getItem(`${language.value}-${question.title}`)
-          );
+          // console.log(
+          //   "JUST SAVED THIS:",
+          //   localStorage.getItem(`${language.value}-${question.title}`)
+          // );
 
           const savedCode = localStorage.getItem(
             `${newLanguage}-${question.title}`
@@ -276,16 +313,15 @@ const Question = () => {
             }}
             nextTest={() => {
               setTestCase((prevTesCase) =>
-                Math.min(question.output.tests.length, prevTesCase + 1)
+                Math.min(totalTestCases, prevTesCase + 1)
               );
             }}
             testNumber={testCase}
           />
           <div className="flex flex-col mt-4 h-full">
-            {/* <CustomInput
-              customInput={customInput}
-              setCustomInput={setCustomInput}
-            /> */}
+            {numCorrect + numFailed === totalTestCases && numFailed === 0 && (
+              <p className="text-green">Passed All Tests!</p>
+            )}
             <button
               onClick={handleCompile}
               disabled={!code}
@@ -296,10 +332,16 @@ const Question = () => {
             >
               {processing ? "Processing..." : "Compile and Execute"}
             </button>
-            {numCorrect !== null &&
-              <p className="text-left">{numCorrect}/{question.output.tests.length} Correct</p>}
-            {numFailed !== null &&
-              <p className="">{numFailed}/{question.output.tests.length} Failed</p>}
+            {numCorrect !== null && (
+              <p className="text-left">
+                {numCorrect}/{totalTestCases} Correct
+              </p>
+            )}
+            {numFailed !== null && (
+              <p className="">
+                {numFailed}/{totalTestCases} Failed
+              </p>
+            )}
           </div>
           <div className="self-center mt-10">
             <button

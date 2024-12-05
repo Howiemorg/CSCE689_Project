@@ -5,6 +5,7 @@ const Quizzes = () => {
   const quizzes = useRouteLoaderData("quizzes");
   const { topicId } = useParams();
   
+  console.log(quizzes)
 
   return (
     <div className="flex flex-col text-center mt-12">
@@ -12,8 +13,8 @@ const Quizzes = () => {
       <div className="flex mx-36 flex-col">
         {quizzes.map((quiz) => (
           <NavLink key={quiz.title} to={`/quiz/${quiz.title}`} state={quiz} className="flex flex-row py-2 px-8 hover:bg-black  hover:text-white border-black border-2 rounded-md mt-12">
-            <p>{quiz.title}</p>
-            <p className="ml-12">{quiz.solved ? "Complete!" : "Incomplete"}</p>
+            <p className="text-start basis-2/5">{quiz.title}</p>
+            <p className="">{quiz.solved ? "Complete!" : "Incomplete"}</p>
             <p className="ml-auto">{quiz.difficulty}</p>
           </NavLink>
         ))}
@@ -28,6 +29,8 @@ export default Quizzes;
 const loadQuizzes = async (topic) => {
   const response = topic ? await fetch(`http://localhost:8000/quizzes/getByTopic/${topic}`) : await fetch(`http://localhost:8000/quizzes/getAll`);
   const json = await response.json();
+
+  console.log("JSON QUIZZES:", json)
 
   if (!response.ok || response.status !== 200) {
     throw new Response(json.error, {

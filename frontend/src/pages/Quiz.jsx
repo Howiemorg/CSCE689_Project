@@ -63,6 +63,7 @@ const Quiz = () => {
         return false;
       }
 
+      console.log(data)
       dispatch(userActions.userSuccess(data));
       return true;
     } catch (err) {

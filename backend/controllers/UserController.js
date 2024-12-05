@@ -66,25 +66,34 @@ class UserController {
   questionSolved = async (req, res, next) => {
     const { email, ...newSolvedQuestion } = req.body;
 
-    const update = {
-      $push: {
-        solvedQuestions: newSolvedQuestion,
-      },
-    };
+    console.log(email);
+    console.log(newSolvedQuestion);
 
-    console.log(email)
-    console.log(newSolvedQuestion)
+    let doc = await User.findOne({ email: email });
 
-    let doc = await User.findOneAndUpdate({ email }, update, {
-      new: true, runValidators: true
-    });
-
-    console.log("DOC:", doc)
+    console.log("DOC:", doc);
 
     if (!doc) {
       res.status(500).json({ error: "Error adding solved question." });
       throw new HttpException(500, "Error adding solved question.");
     }
+
+    const question = doc.solvedQuestions.find(
+      (solvedQuestion) =>
+        solvedQuestion.questionId === newSolvedQuestion.questionId
+    );
+
+    if (question) {
+      Object.keys(newSolvedQuestion.answers).map((key) =>
+        question.answers.set(key, newSolvedQuestion.answers[key])
+      );
+    } else {
+      doc.solvedQuestions.push(newSolvedQuestion);
+    }
+
+    doc = await doc.save();
+
+    console.log("NEW DOC:", doc)
 
     res.json(doc);
   };

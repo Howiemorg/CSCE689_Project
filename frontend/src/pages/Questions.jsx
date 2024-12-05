@@ -10,9 +10,10 @@ const Questions = () => {
       <h1 className="text-3xl">Coding Questions {topicId && `for ${topicId}`}</h1>
       <div className="flex mx-36 flex-col">
         {questions.map((question) => (
-          <NavLink key={question.title} to={`/question/${question.title}`} state={question} className="flex flex-row content-between justify-between py-2 px-8 hover:bg-black  hover:text-white border-black border-2 rounded-md mt-12">
-            <p>{question.title}</p>
-            <p>{question.difficulty}</p>
+          <NavLink key={question.title} to={`/question/${question.title}`} state={question} className="flex flex-row py-2 px-8 hover:bg-black  hover:text-white border-black border-2 rounded-md mt-12">
+            <p className="text-start basis-2/5">{question.title}</p>
+            <p className="">{question.solved ? "Solved!" : "Unsolved"}</p>
+            <p className="ml-auto">{question.difficulty}</p>
           </NavLink>
         ))}
       </div>

@@ -14,14 +14,35 @@ class QuestionController {
   };
 
   getQuestions = async (req, res, next) => {
-    const questions = await Question.find({});
+    const questions = await Question.aggregate([
+      {
+        $lookup: {
+          from: "Users",
+          localField: "_id",
+          foreignField: "solvedQuestions.questionId",
+          as: "questionsSolved",
+        },
+      },
+      {
+        $addFields: {
+          solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
+        },
+      },
+      {
+        $project: {
+          questionsSolved: 0,
+        },
+      },
+    ]);
+
+    console.log(questions);
 
     if (!questions.length) {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
     }
 
-    res.json({questions: questions});
+    res.json({ questions: questions });
   };
 
   createQuestion = async (req, res, next) => {
@@ -38,16 +59,40 @@ class QuestionController {
   };
 
   getQuestionByTopic = async (req, res, next) => {
-    const questions = await Question.find({
-        topic: req.params.topicId
-    });
+    const questions = await Question.aggregate([
+      {
+        $match: {
+          topic: req.params.topicId,
+        },
+      },
+      {
+        $lookup: {
+          from: "Users",
+          localField: "_id",
+          foreignField: "solvedQuestions.questionId",
+          as: "questionsSolved",
+        },
+      },
+      {
+        $addFields: {
+          solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
+        },
+      },
+      {
+        $project: {
+          questionsSolved: 0,
+        },
+      },
+    ]);
+
+    console.log(questions);
 
     if (!questions.length) {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
     }
 
-    res.json({questions: questions});
+    res.json({ questions: questions });
   };
 }
 
