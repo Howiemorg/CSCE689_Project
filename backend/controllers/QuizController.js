@@ -108,42 +108,19 @@ class QuizController {
     limit = parseInt(limit);
     page = parseInt(page);
 
-    const startingAggregationWithPagination = [
-      {
-        $match: {
-          topic: req.params.topicId,
-        },
-      },
-    ];
+    const startingAggregationWithPagination = [];
 
     if (page !== null && limit !== null) {
       startingAggregationWithPagination.push({ $skip: page * limit });
       startingAggregationWithPagination.push({ $limit: limit });
     }
 
-    console.log("AGGREGATION:", [
-      startingAggregationWithPagination,
-      {
-        $lookup: {
-          from: "Users",
-          localField: "_id",
-          foreignField: "solvedQuestions.questionId",
-          as: "quizzesSolved",
-        },
-      },
-      {
-        $addFields: {
-          solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
-        },
-      },
-      {
-        $project: {
-          quizzesSolved: 0,
-        },
-      },
-    ]);
-
     let docs = await Quiz.aggregate([
+      {
+        $match: {
+          topic: req.params.topicId,
+        },
+      },
       {
         $facet: {
           quizzes: [

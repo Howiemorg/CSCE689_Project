@@ -14,6 +14,8 @@ const usePagination = (url, defaultMaxPage) => {
         return { meassage: "Error fetching data" };
       }
 
+      console.log("PAGINATED JSON:", json)
+
       if (json.maxPages) {
         setMaxPages(json.maxPages);
       }

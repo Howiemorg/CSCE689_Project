@@ -13,7 +13,7 @@ const Quizzes = () => {
   const url = topicId
     ? `http://localhost:8000/quizzes/getByTopic/${topicId}?`
     : `http://localhost:8000/quizzes/getAll?`;
-  const [quizzes, setQuizzes] = useState(loadedQuizzes);
+  const [quizzes, setQuizzes] = useState(loadedQuizzes.quizzes);
   const {
     page,
     maxPages,
@@ -22,7 +22,7 @@ const Quizzes = () => {
     firstPage,
     lastPage,
     getContent,
-  } = usePagination(url, 1);
+  } = usePagination(url, loadedQuizzes.maxPages);
 
 
   const getPaginatedContent = async () => {
@@ -113,6 +113,9 @@ const loadQuizzes = async (topic) => {
   console.log("JSON QUIZZES:", json);
 
   if (!response.ok || response.status !== 200) {
+    if(response.status === 404){
+      return []
+    }
     throw new Response(json.error, {
       headers: {
         "Content-Type": "application/json; utf-8",
@@ -121,7 +124,7 @@ const loadQuizzes = async (topic) => {
     });
   }
 
-  return json.quizzes;
+  return json;
 };
 
 export const loader = async ({ request, params }) => {

@@ -28,7 +28,7 @@ class QuestionController {
     let docs = await Question.aggregate([
       {
         $facet: {
-          quizzes: [
+          questions: [
             ...startingAggregationWithPagination,
             {
               $lookup: {
@@ -56,7 +56,7 @@ class QuestionController {
 
     docs = docs[0];
 
-    if (!docs.quizzes.length) {
+    if (!docs.questions.length) {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
     }
@@ -86,13 +86,7 @@ class QuestionController {
     limit = parseInt(limit);
     page = parseInt(page);
 
-    const startingAggregationWithPagination = [
-      {
-        $match: {
-          topic: req.params.topicId,
-        },
-      },
-    ];
+    const startingAggregationWithPagination = [];
 
     if (page !== null && limit !== null) {
       startingAggregationWithPagination.push({ $skip: page * limit });
@@ -101,8 +95,13 @@ class QuestionController {
 
     let docs = await Question.aggregate([
       {
+        $match: {
+          topic: req.params.topicId,
+        },
+      },
+      {
         $facet: {
-          quizzes: [
+          questions: [
             ...startingAggregationWithPagination,
             {
               $lookup: {
@@ -130,13 +129,12 @@ class QuestionController {
 
     docs = docs[0];
 
-    if (!docs.quizzes.length) {
+    if (!docs.questions.length) {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
     }
 
     docs.maxPages = docs.maxPages[0].value;
-
     if (limit !== null) docs.maxPages = Math.ceil(docs.maxPages / limit) - 1;
 
     res.json(docs);
