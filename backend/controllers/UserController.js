@@ -27,40 +27,10 @@ class UserController {
     res.status(201).send(doc);
   };
 
-//   updateUser = async (req, res, next) => {
-//     checkValidation(req, res);
-
-//     await this.hashPassword(req);
-
-//     const { confirmPassword, ...updates } = req.body;
-
-//     const result = await User.findOneAndUpdate(
-//       { _id: req.params.id },
-//       updates,
-//       { new: true }
-//     );
-
-//     if (!result) {
-//       res.status(404).json({ message: "No users updated" });
-//       throw new HttpException(404, "No users updated");
-//     }
-
-//     res.send({ message: "User updated", result });
-//   };
-
-//   deleteUser = async (req, res, next) => {
-//     const result = await User.deleteOne({ _id: req.params.id });
-//     if (!result) {
-//       res.status(404).json({ message: "User not found" });
-//       throw new HttpException(404, "User not found");
-//     }
-//     res.send("User has been deleted");
-//   };
-
   userLogin = async (req, res, next) => {
     const { email, password: pass } = req.body;
 
-    console.log(email)
+    console.log(email);
 
     const user = await User.findOne({ email });
 
@@ -91,6 +61,32 @@ class UserController {
     if (req.body.password) {
       req.body.password = await bcrypt.hash(req.body.password, 8);
     }
+  };
+
+  questionSolved = async (req, res, next) => {
+    const { email, ...newSolvedQuestion } = req.body;
+
+    const update = {
+      $push: {
+        solvedQuestions: newSolvedQuestion,
+      },
+    };
+
+    console.log(email)
+    console.log(newSolvedQuestion)
+
+    let doc = await User.findOneAndUpdate({ email }, update, {
+      new: true, runValidators: true
+    });
+
+    console.log("DOC:", doc)
+
+    if (!doc) {
+      res.status(500).json({ error: "Error adding solved question." });
+      throw new HttpException(500, "Error adding solved question.");
+    }
+
+    res.json(doc);
   };
 }
 
