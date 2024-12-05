@@ -14,35 +14,58 @@ class QuestionController {
   };
 
   getQuestions = async (req, res, next) => {
-    const questions = await Question.aggregate([
+    let { limit, page } = req.query;
+    limit = parseInt(limit);
+    page = parseInt(page);
+
+    const startingAggregationWithPagination = [];
+
+    if (page !== null && limit !== null) {
+      startingAggregationWithPagination.push({ $skip: page * limit });
+      startingAggregationWithPagination.push({ $limit: limit });
+    }
+
+    let docs = await Question.aggregate([
       {
-        $lookup: {
-          from: "Users",
-          localField: "_id",
-          foreignField: "solvedQuestions.questionId",
-          as: "questionsSolved",
-        },
-      },
-      {
-        $addFields: {
-          solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
-        },
-      },
-      {
-        $project: {
-          questionsSolved: 0,
+        $facet: {
+          quizzes: [
+            ...startingAggregationWithPagination,
+            {
+              $lookup: {
+                from: "Users",
+                localField: "_id",
+                foreignField: "solvedQuestions.questionId",
+                as: "questionsSolved",
+              },
+            },
+            {
+              $addFields: {
+                solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
+              },
+            },
+            {
+              $project: {
+                quizzesSolved: 0,
+              },
+            },
+          ],
+          maxPages: [{ $count: "value" }],
         },
       },
     ]);
 
-    console.log(questions);
+    docs = docs[0];
 
-    if (!questions.length) {
+    if (!docs.quizzes.length) {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
     }
 
-    res.json({ questions: questions });
+    docs.maxPages = docs.maxPages[0].value;
+
+    if (limit !== null) docs.maxPages = Math.ceil(docs.maxPages / limit) - 1;
+
+    res.json(docs);
   };
 
   createQuestion = async (req, res, next) => {
@@ -59,40 +82,64 @@ class QuestionController {
   };
 
   getQuestionByTopic = async (req, res, next) => {
-    const questions = await Question.aggregate([
+    let { limit, page } = req.query;
+    limit = parseInt(limit);
+    page = parseInt(page);
+
+    const startingAggregationWithPagination = [
       {
         $match: {
           topic: req.params.topicId,
         },
       },
+    ];
+
+    if (page !== null && limit !== null) {
+      startingAggregationWithPagination.push({ $skip: page * limit });
+      startingAggregationWithPagination.push({ $limit: limit });
+    }
+
+    let docs = await Question.aggregate([
       {
-        $lookup: {
-          from: "Users",
-          localField: "_id",
-          foreignField: "solvedQuestions.questionId",
-          as: "questionsSolved",
-        },
-      },
-      {
-        $addFields: {
-          solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
-        },
-      },
-      {
-        $project: {
-          questionsSolved: 0,
+        $facet: {
+          quizzes: [
+            ...startingAggregationWithPagination,
+            {
+              $lookup: {
+                from: "Users",
+                localField: "_id",
+                foreignField: "solvedQuestions.questionId",
+                as: "questionsSolved",
+              },
+            },
+            {
+              $addFields: {
+                solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
+              },
+            },
+            {
+              $project: {
+                quizzesSolved: 0,
+              },
+            },
+          ],
+          maxPages: [{ $count: "value" }],
         },
       },
     ]);
 
-    console.log(questions);
+    docs = docs[0];
 
-    if (!questions.length) {
+    if (!docs.quizzes.length) {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
     }
 
-    res.json({ questions: questions });
+    docs.maxPages = docs.maxPages[0].value;
+
+    if (limit !== null) docs.maxPages = Math.ceil(docs.maxPages / limit) - 1;
+
+    res.json(docs);
   };
 }
 

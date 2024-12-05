@@ -14,7 +14,19 @@ class QuizController {
   };
 
   getQuizzes = async (req, res, next) => {
-    const quizzes = await Quiz.aggregate([
+    let { limit, page } = req.query;
+    limit = parseInt(limit);
+    page = parseInt(page);
+
+    const startingAggregationWithPagination = [];
+
+    if (page !== null && limit !== null) {
+      startingAggregationWithPagination.push({ $skip: page * limit });
+      startingAggregationWithPagination.push({ $limit: limit });
+    }
+
+    console.log("AGGREGATION:", [
+      startingAggregationWithPagination,
       {
         $lookup: {
           from: "Users",
@@ -30,19 +42,52 @@ class QuizController {
       },
       {
         $project: {
-          quizzesSolved: 0, 
+          quizzesSolved: 0,
         },
       },
     ]);
 
-    console.log(quizzes)
+    let docs = await Quiz.aggregate([
+      {
+        $facet: {
+          quizzes: [
+            ...startingAggregationWithPagination,
+            {
+              $lookup: {
+                from: "Users",
+                localField: "_id",
+                foreignField: "solvedQuestions.questionId",
+                as: "quizzesSolved",
+              },
+            },
+            {
+              $addFields: {
+                solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
+              },
+            },
+            {
+              $project: {
+                quizzesSolved: 0,
+              },
+            },
+          ],
+          maxPages: [{ $count: "value" }],
+        },
+      },
+    ]);
 
-    if (!quizzes.length) {
+    docs = docs[0];
+
+    if (!docs.quizzes.length) {
       res.status(404).json({ error: "Couldn't find quizzes." });
       throw new HttpException(404, "Couldn't find quizzes");
     }
 
-    res.json({ quizzes: quizzes });
+    docs.maxPages = docs.maxPages[0].value;
+
+    if (limit !== null) docs.maxPages = Math.ceil(docs.maxPages / limit) - 1;
+
+    res.json(docs);
   };
 
   createQuiz = async (req, res, next) => {
@@ -59,10 +104,25 @@ class QuizController {
   };
 
   getQuizByTopic = async (req, res, next) => {
-    const quizzes = await Quiz.aggregate([
-      {$match: {
-        topic: req.params.topicId
-      }},
+    let { limit, page } = req.query;
+    limit = parseInt(limit);
+    page = parseInt(page);
+
+    const startingAggregationWithPagination = [
+      {
+        $match: {
+          topic: req.params.topicId,
+        },
+      },
+    ];
+
+    if (page !== null && limit !== null) {
+      startingAggregationWithPagination.push({ $skip: page * limit });
+      startingAggregationWithPagination.push({ $limit: limit });
+    }
+
+    console.log("AGGREGATION:", [
+      startingAggregationWithPagination,
       {
         $lookup: {
           from: "Users",
@@ -78,19 +138,52 @@ class QuizController {
       },
       {
         $project: {
-          quizzesSolved: 0, 
+          quizzesSolved: 0,
         },
       },
     ]);
 
-    console.log(quizzes)
+    let docs = await Quiz.aggregate([
+      {
+        $facet: {
+          quizzes: [
+            ...startingAggregationWithPagination,
+            {
+              $lookup: {
+                from: "Users",
+                localField: "_id",
+                foreignField: "solvedQuestions.questionId",
+                as: "quizzesSolved",
+              },
+            },
+            {
+              $addFields: {
+                solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
+              },
+            },
+            {
+              $project: {
+                quizzesSolved: 0,
+              },
+            },
+          ],
+          maxPages: [{ $count: "value" }],
+        },
+      },
+    ]);
 
-    if (!quizzes.length) {
+    docs = docs[0];
+
+    if (!docs.quizzes.length) {
       res.status(404).json({ error: "Couldn't find quizzes." });
       throw new HttpException(404, "Couldn't find quizzes");
     }
 
-    res.json({ quizzes: quizzes });
+    docs.maxPages = docs.maxPages[0].value;
+
+    if (limit !== null) docs.maxPages = Math.ceil(docs.maxPages / limit) - 1;
+
+    res.json(docs);
   };
 }
 
