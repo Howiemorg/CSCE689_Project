@@ -1,5 +1,4 @@
 import { userActions } from "./user-slice";
-import "dotenv/config";
 
 export const login = (email, password) => {
   return async (dispatch) => {
@@ -9,19 +8,23 @@ export const login = (email, password) => {
       const response = await fetch("http://localhost:8000/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: email, password: password }),
+        body: JSON.stringify({ email: email, password: password }),
       });
+
+      const data = await response.json();
 
       if (!response.ok) {
         if (response.status === 401)
           dispatch(userActions.userFail("Incorrect Username/Password!"));
         else {
-          dispatch(userActions.userFail("Failed to Login!"));
+          dispatch(
+            userActions.userFail(
+              data.message ? data.message : "Failed to Login!"
+            )
+          );
         }
         return;
       }
-
-      const data = await response.json();
 
       dispatch(userActions.userSuccess(data));
     } catch (err) {
@@ -52,12 +55,16 @@ export const register = (body) => {
         body: JSON.stringify(body),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        dispatch(userActions.userFail("Failed to Register!"));
+        dispatch(
+          userActions.userFail(
+            data.message ? data.message : "Failed to Register!"
+          )
+        );
         return;
       }
-
-      const data = await response.json();
 
       dispatch(userActions.userSuccess(data));
     } catch (err) {

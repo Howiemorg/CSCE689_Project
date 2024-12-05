@@ -15,6 +15,7 @@ import Quiz from "./pages/Quiz";
 import StudyMaterial from "./pages/StudyMaterial";
 import LoginPage from "./pages/LoginPage";
 import SignUp from "./pages/SignUp";
+import Provider from "./store/provider";
 
 const router = createBrowserRouter([
   {
@@ -127,7 +128,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <Provider>
+      <RouterProvider router={router} />
+    </Provider>
+  );
 }
 
 export default App;
