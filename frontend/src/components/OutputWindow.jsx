@@ -1,10 +1,23 @@
-import { ArrowLeftCircleIcon, ArrowRightCircleIcon } from "@heroicons/react/20/solid";
+import {
+  ArrowLeftCircleIcon,
+  ArrowRightCircleIcon,
+} from "@heroicons/react/20/solid";
 import React from "react";
 
-const OutputWindow = ({ output, expected_output, inputs, prevTest, nextTest, testNumber }) => {
+const OutputWindow = ({
+  output,
+  expected_output,
+  inputs,
+  prevTest,
+  nextTest,
+  testNumber,
+}) => {
   const statusId = output?.status?.id;
 
-  console.log("OUTPUT:", output)
+  // const answer = output ? JSON.parse(atob(output.stdout)) : "";
+  // const correct = output
+  //   ? statusId === 3 || JSON.stringify(JSON.parse(expected_output).sort()) === JSON.stringify(answer.sort())
+  //   : false;
 
   const outputText = output && (
     <div className=" mt-4">
@@ -17,7 +30,7 @@ const OutputWindow = ({ output, expected_output, inputs, prevTest, nextTest, tes
       >
         {statusId === 3 || statusId === 4 ? (
           <p>
-            Output ({output.status.description}) {atob(output.stdout)}
+            Output ({statusId === 3 ? "Correct" : output.status.description}) {atob(output.stdout)}
           </p>
         ) : statusId === 6 ? (
           <p>{atob(output.compile_output)}</p>
@@ -30,14 +43,18 @@ const OutputWindow = ({ output, expected_output, inputs, prevTest, nextTest, tes
     </div>
   );
 
-  console.log(output);
-
   return (
-    <div className="flex flex-col p-4 bg-black text-white rounded-lg">
+    <div className="flex flex-col p-4 bg-black text-white rounded-lg overflow-auto max-h-96">
       <div className=" justify-evenly flex flex-row">
-        <ArrowLeftCircleIcon onClick={prevTest} className="w-8 h-8 cursor-pointer"  />
+        <ArrowLeftCircleIcon
+          onClick={prevTest}
+          className="w-8 h-8 cursor-pointer"
+        />
         Test {testNumber}
-        <ArrowRightCircleIcon onClick={nextTest} className="w-8 h-8 cursor-pointer" />
+        <ArrowRightCircleIcon
+          onClick={nextTest}
+          className="w-8 h-8 cursor-pointer"
+        />
       </div>
       <div className="flex flex-row justify-between w-full">
         <div className="">

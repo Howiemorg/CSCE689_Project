@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   NavLink,
-  Outlet,
   useParams,
   useRouteLoaderData,
 } from "react-router-dom";
@@ -30,7 +29,6 @@ const Questions = () => {
       setQuestions(json.questions);
     }
   };
-  console.log(questions);
 
   useEffect(() => {
     getPaginatedContent();

@@ -78,9 +78,12 @@ class UserController {
       throw new HttpException(500, "Error adding solved question.");
     }
 
+    console.log(doc.solvedQuestions)
+    console.log("NEW QUESTION:", newSolvedQuestion)
+
     const question = doc.solvedQuestions.find(
       (solvedQuestion) =>
-        solvedQuestion.questionId === newSolvedQuestion.questionId
+        solvedQuestion.questionId._id.toString() === newSolvedQuestion.questionId.toString()
     );
 
     if (question) {

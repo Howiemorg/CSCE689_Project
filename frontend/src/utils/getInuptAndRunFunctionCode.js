@@ -29,7 +29,25 @@ const getInputAndRunFunctionCode = (
     input += `print(${functionCall})`;
     return input;
   } else if (langauge === "cpp") {
-    input += "#include <bits/stdc++.h>\nusing namespace std;\n";
+    input += `#include <bits/stdc++.h>\nusing namespace std;
+    \ntemplate <typename T>
+ void printVectorHelperFunction(vector<T> vec){
+    int n = vec.size() - 1;
+    cout << "[";
+    if(n == -1){
+      cout << "]\\n";
+    }else{
+      for(int i = 0; i <= n; ++i){
+        if constexpr (is_same_v<T, vector<typename T::value_type>>) {
+            printVectorHelperFunction(vec[i]);
+        } else {
+            // Print the element directly
+            cout << vec[i];
+        }
+        cout << (i == n ? "]" : ","); 
+      }
+    }
+  }\n`;
 
     input +=
       code +
@@ -68,18 +86,7 @@ const getInputAndRunFunctionCode = (
 
     if (returnType.startsWith("vector")) {
       input += `${returnType} ret = ${functionCall};
-      if(!ret){
-        return;
-      }
-      int n = ret.size() - 1;
-      cout << "[";
-      if(n == -1){
-        cout << "]\\n";
-      }else{
-        for(int i = 0; i <= n; ++i){
-          cout << ret[i] << (i == n ? "]\\n" : ", "); 
-        }
-      }`;
+      printVectorHelperFunction(ret);`;
     } else {
       input += `\tcout << ${functionCall};`;
     }
@@ -89,7 +96,23 @@ const getInputAndRunFunctionCode = (
   } else if (langauge === "javascript") {
     input +=
       code +
-      `\nprocess.stdin.on("data", data => {\nconst preprocessed_data = data.toString().trim().split("\\n")\n`;
+      `\n
+      const printArrayHelper = (arr) => {
+        if (Array.isArray(arr)) {
+            process.stdout.write("[");
+            for (let i = 0; i < arr.length; i++) {
+                if (Array.isArray(arr[i])) {
+                    printArrayHelper(arr[i]);
+                } else {
+                    process.stdout.write(\`\${arr[i]}\`);
+                }
+                if (i < arr.length - 1) {
+                    process.stdout.write(",");
+                }
+            }
+            process.stdout.write("]");
+        }
+    }\n\nprocess.stdin.on("data", data => {\nconst preprocessed_data = data.toString().trim().split("\\n")\n`;
     let functionCall = functionName + "(";
     parameterNames.forEach((key, index) => {
       let type = String(parameterNamesToTypes[key]);
@@ -107,15 +130,7 @@ const getInputAndRunFunctionCode = (
     });
     if (returnType.endsWith("[]")) {
       input += `ret = ${functionCall};
-      if(!ret){
-        return;
-      }
-      process.stdout.write("[");
-      if(ret.length === 0){
-        process.stdout.write("]")
-      }else{
-        ret.map((val, indx) => process.stdout.write(val + (indx === ret.length - 1 ? "]\\n" : ", ")));
-      }`;
+      printArrayHelper(ret)`;
     } else {
       input += `console.log(${functionCall});`;
     }

@@ -56,6 +56,7 @@ const Question = () => {
           (solvedQuestion) => solvedQuestion.questionId === question._id
         ).answers
       : null;
+    setLanguage(languageOptions[0]);
     setCode(
       savedAnswers && savedAnswers["javascript"]
         ? savedAnswers["javascript"]
@@ -119,6 +120,10 @@ const Question = () => {
     }
   };
   const handleCompile = async () => {
+    if(!language.id){
+      console.log("LANGUAGEEEE:", language)
+      return;
+    }
     setError("");
     setProcessing(true);
     setNumCorrect(0);
@@ -172,6 +177,8 @@ const Question = () => {
   };
 
   const checkStatus = async (tokens) => {
+    let numFailedCounter = 0
+    console.log(tokens);
     setOutputDetails([]);
     for (let index = 0; index < tokens.length; ++index) {
       const token = tokens[index].token;
@@ -196,9 +203,16 @@ const Question = () => {
           }, 1000);
           return;
         } else {
-          if (statusId === 3) {
+          console.log("OUTPUT:", atob(response.stdout))
+          const answer = response.stdout ? JSON.parse(atob(response.stdout)) : "";
+          const correct = answer && Array.isArray(answer)
+            ? statusId === 3 || JSON.stringify(JSON.parse(atob(response.expected_output)).sort()) === JSON.stringify(answer.sort())
+            : false;
+          if (correct) {
+            response.status.id = 3;
             setNumCorrect((prevNumCorrect) => prevNumCorrect + 1);
           } else {
+            numFailedCounter++;
             setNumFailed((prevNumFailed) => prevNumFailed + 1);
           }
           setOutputDetails((prevOutputDetails) => [
@@ -213,7 +227,8 @@ const Question = () => {
       setProcessing(false);
     }
 
-    if (numFailed === 0) {
+    if (numFailedCounter === 0) {
+      console.log("SENDING SOLVED QUESTION");
       await sendSolvedQuestion();
     }
   };
@@ -260,6 +275,7 @@ const Question = () => {
           //   localStorage.getItem(`${language.value}-${question.title}`)
           // );
 
+          console.log("NEW LANGUAGE:", newLanguage);
           const savedCode = localStorage.getItem(
             `${newLanguage}-${question.title}`
           );
