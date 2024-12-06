@@ -51,7 +51,7 @@ const router = createBrowserRouter([
       },
       {
         path: "questions",
-        loader: QuestionsLoader,
+        // loader: QuestionsLoader,
         id: "questions",
         children: [
           {
@@ -81,7 +81,7 @@ const router = createBrowserRouter([
       },
       {
         path: "quizzes",
-        loader: QuizzesLoader,
+        // loader: QuizzesLoader,
         id: "quizzes",
         children: [
           {

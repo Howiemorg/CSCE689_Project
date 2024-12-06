@@ -25,7 +25,15 @@ const Quiz = () => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
 
   useEffect(() => {
-    setSelectedAnswers(quiz.solved ? Object.values(userInfo.solvedQuestions.find((solvedQuestion => solvedQuestion.questionId === quiz._id)).answers) : []);
+    setSelectedAnswers(
+      quiz.solved
+        ? Object.values(
+            userInfo.solvedQuestions.find(
+              (solvedQuestion) => solvedQuestion.questionId === quiz._id
+            ).answers
+          )
+        : []
+    );
     setSelectedAnswer("");
     firstPage();
     setMaxPages(quiz.questions.length);
@@ -63,7 +71,7 @@ const Quiz = () => {
         return false;
       }
 
-      console.log(data)
+      console.log(data);
       dispatch(userActions.userSuccess(data));
       return true;
     } catch (err) {
@@ -72,56 +80,64 @@ const Quiz = () => {
     }
   };
 
+  console.log("Question:", question);
+
   return (
     <div className="m-10">
       {selectedAnswers.length === quiz.questions.length ? (
         <QuizSubmitted selectedAnswers={selectedAnswers} quiz={quiz} />
       ) : (
-        <>
-          <h1 className="text-xl text-center font-semibold mb-4">
-            {quiz.title}
-          </h1>
-          <p>{question.question}</p>
-          <div className="flex flex-col space-y-7 mt-6">
-            {question.choices.map((choice) => (
-              <div key={choice}>
-                <input
-                  type="radio"
-                  id={choice}
-                  name={question.question}
-                  value={choice}
-                  checked={selectedAnswer === choice}
-                  onChange={(e) => setSelectedAnswer(e.target.value)}
-                />
-                <label htmlFor={choice} className="ml-3">
-                  {choice}
-                </label>
-              </div>
-            ))}
-          </div>
-          {error && <p className="text-red text-center">{error}</p>}
-          <button
-            className="ml-auto py-2 px-8 hover:bg-black  hover:text-white border-black border-2 rounded-md mt-12"
-            disabled={selectedAnswer.length === 0 || loading}
-            onClick={async() => {
-              setError("");
-              if (userInfo && quiz._id && page === quiz.questions.length - 1) {
-                dispatch(userActions.userRequest());
-                const successfullySent = await sendSolvedQuestion();
-                dispatch(userActions.userReset());
-                if(!successfullySent) return;
-              }
-              nextPage();
-              setSelectedAnswer("");
-              setSelectedAnswers((prevSelectedAnswers) => [
-                ...prevSelectedAnswers,
-                selectedAnswer,
-              ]);
-            }}
-          >
-            {page === quiz.questions.length - 1 ? "Submit" : "Next Question"}
-          </button>
-        </>
+        question && (
+          <>
+            <h1 className="text-xl text-center font-semibold mb-4">
+              {quiz.title}
+            </h1>
+            <p>{question.question}</p>
+            <div className="flex flex-col space-y-7 mt-6">
+              {question.choices.map((choice) => (
+                <div key={choice}>
+                  <input
+                    type="radio"
+                    id={choice}
+                    name={question.question}
+                    value={choice}
+                    checked={selectedAnswer === choice}
+                    onChange={(e) => setSelectedAnswer(e.target.value)}
+                  />
+                  <label htmlFor={choice} className="ml-3">
+                    {choice}
+                  </label>
+                </div>
+              ))}
+            </div>
+            {error && <p className="text-red text-center">{error}</p>}
+            <button
+              className="ml-auto py-2 px-8 hover:bg-black  hover:text-white border-black border-2 rounded-md mt-12"
+              disabled={selectedAnswer.length === 0 || loading}
+              onClick={async () => {
+                setError("");
+                if (
+                  userInfo &&
+                  quiz._id &&
+                  page === quiz.questions.length - 1
+                ) {
+                  dispatch(userActions.userRequest());
+                  const successfullySent = await sendSolvedQuestion();
+                  dispatch(userActions.userReset());
+                  if (!successfullySent) return;
+                }
+                nextPage();
+                setSelectedAnswer("");
+                setSelectedAnswers((prevSelectedAnswers) => [
+                  ...prevSelectedAnswers,
+                  selectedAnswer,
+                ]);
+              }}
+            >
+              {page === quiz.questions.length - 1 ? "Submit" : "Next Question"}
+            </button>
+          </>
+        )
       )}
     </div>
   );

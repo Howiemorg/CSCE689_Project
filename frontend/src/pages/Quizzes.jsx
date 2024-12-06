@@ -6,14 +6,16 @@ import {
   useRouteLoaderData,
 } from "react-router-dom";
 import usePagination from "../hooks/usePagination";
+import { useSelector } from "react-redux";
 
 const Quizzes = () => {
   const { topicId } = useParams();
   const loadedQuizzes = useRouteLoaderData("quizzes");
+  const { userInfo }= useSelector((state) => state.user)
   const url = topicId
-    ? `http://localhost:8000/quizzes/getByTopic/${topicId}?`
-    : `http://localhost:8000/quizzes/getAll?`;
-  const [quizzes, setQuizzes] = useState(loadedQuizzes.quizzes);
+    ? `http://localhost:8000/quizzes/getByTopic/${topicId}?email=${userInfo.email}&`
+    : `http://localhost:8000/quizzes/getAll?email=${userInfo.email}&`;
+  const [quizzes, setQuizzes] = useState([]);
   const {
     page,
     maxPages,
@@ -22,7 +24,7 @@ const Quizzes = () => {
     firstPage,
     lastPage,
     getContent,
-  } = usePagination(url, loadedQuizzes.maxPages);
+  } = usePagination(url, -1);
 
 
   const getPaginatedContent = async () => {

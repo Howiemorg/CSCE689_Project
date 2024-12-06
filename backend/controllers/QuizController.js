@@ -25,59 +25,72 @@ class QuizController {
       startingAggregationWithPagination.push({ $limit: limit });
     }
 
-    console.log("AGGREGATION:", [
-      startingAggregationWithPagination,
-      {
-        $lookup: {
-          from: "Users",
-          localField: "_id",
-          foreignField: "solvedQuestions.questionId",
-          as: "quizzesSolved",
-        },
-      },
-      {
-        $addFields: {
-          solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
-        },
-      },
-      {
-        $project: {
-          quizzesSolved: 0,
-        },
-      },
-    ]);
+    console.log(req.query);
 
-    let docs = await Quiz.aggregate([
-      {
-        $facet: {
-          quizzes: [
-            ...startingAggregationWithPagination,
-            {
-              $lookup: {
-                from: "Users",
-                localField: "_id",
-                foreignField: "solvedQuestions.questionId",
-                as: "quizzesSolved",
+    let docs = null;
+    if (req.query.email) {
+      const email = req.query.email;
+      console.log(email);
+      docs = await Quiz.aggregate([
+        {
+          $lookup: {
+            from: "Users",
+            let: { questionId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$email", email] },
+                      {
+                        $in: ["$$questionId", "$solvedQuestions.questionId"],
+                      },
+                    ],
+                  },
+                },
               },
-            },
-            {
-              $addFields: {
-                solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
-              },
-            },
-            {
-              $project: {
-                quizzesSolved: 0,
-              },
-            },
-          ],
-          maxPages: [{ $count: "value" }],
+            ],
+            as: "quizzesSolved",
+          },
         },
-      },
-    ]);
+        {
+          $facet: {
+            quizzes: [
+              ...startingAggregationWithPagination,
+              {
+                $addFields: {
+                  solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
+                },
+              },
+              {
+                $project: {
+                  quizzesSolved: 0,
+                },
+              },
+            ],
+            maxPages: [{ $count: "value" }],
+          },
+        },
+      ]);
+
+      console.log(docs[0].quizzes);
+    } else {
+      docs = await Quiz.aggregate([
+        {
+          $match: { topic: req.params.topicId },
+        },
+        {
+          $facet: {
+            quizzes: startingAggregationWithPagination,
+            maxPages: [{ $count: "value" }],
+          },
+        },
+      ]);
+
+      console.log(docs);
+    }
 
     docs = docs[0];
-
     if (!docs.quizzes.length) {
       res.status(404).json({ error: "Couldn't find quizzes." });
       throw new HttpException(404, "Couldn't find quizzes");
@@ -115,42 +128,77 @@ class QuizController {
       startingAggregationWithPagination.push({ $limit: limit });
     }
 
-    let docs = await Quiz.aggregate([
-      {
-        $match: {
-          topic: req.params.topicId,
+    console.log(req.query);
+
+    let docs = null;
+    if (req.query.email) {
+      const email = req.query.email;
+      console.log(email);
+      docs = await Quiz.aggregate([
+        {
+          $match: {
+            topic: req.params.topicId,
+          },
         },
-      },
-      {
-        $facet: {
-          quizzes: [
-            ...startingAggregationWithPagination,
-            {
-              $lookup: {
-                from: "Users",
-                localField: "_id",
-                foreignField: "solvedQuestions.questionId",
-                as: "quizzesSolved",
+        {
+          $lookup: {
+            from: "Users",
+            let: { questionId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$email", email] },
+                      {
+                        $in: ["$$questionId", "$solvedQuestions.questionId"],
+                      },
+                    ],
+                  },
+                },
               },
-            },
-            {
-              $addFields: {
-                solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
-              },
-            },
-            {
-              $project: {
-                quizzesSolved: 0,
-              },
-            },
-          ],
-          maxPages: [{ $count: "value" }],
+            ],
+            as: "quizzesSolved",
+          },
         },
-      },
-    ]);
+        {
+          $facet: {
+            quizzes: [
+              ...startingAggregationWithPagination,
+              {
+                $addFields: {
+                  solved: { $gt: [{ $size: "$quizzesSolved" }, 0] },
+                },
+              },
+              {
+                $project: {
+                  quizzesSolved: 0,
+                },
+              },
+            ],
+            maxPages: [{ $count: "value" }],
+          },
+        },
+      ]);
+
+      console.log(docs[0].quizzes);
+    } else {
+      docs = await Quiz.aggregate([
+        {
+          $match: { topic: req.params.topicId },
+        },
+        {
+          $facet: {
+            quizzes: startingAggregationWithPagination,
+            maxPages: [{ $count: "value" }],
+          },
+        },
+      ]);
+
+      console.log(docs);
+    }
 
     docs = docs[0];
-
     if (!docs.quizzes.length) {
       res.status(404).json({ error: "Couldn't find quizzes." });
       throw new HttpException(404, "Couldn't find quizzes");

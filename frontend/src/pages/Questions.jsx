@@ -5,14 +5,16 @@ import {
   useRouteLoaderData,
 } from "react-router-dom";
 import usePagination from "../hooks/usePagination";
+import { useSelector } from "react-redux";
 
 const Questions = () => {
   const { topicId } = useParams();
-  const loadedQuestions = useRouteLoaderData("questions");
+  // const loadedQuestions = useRouteLoaderData("questions");
+  const { userInfo }= useSelector((state) => state.user)
   const url = topicId
-    ? `http://localhost:8000/questions/getByTopic/${topicId}?`
-    : `http://localhost:8000/questions/getAll?`;
-  const [questions, setQuestions] = useState(loadedQuestions.questions);
+    ? `http://localhost:8000/questions/getByTopic/${topicId}?email=${userInfo.email}&`
+    : `http://localhost:8000/questions/getAll?email=${userInfo.email}&`;
+  const [questions, setQuestions] = useState([]);
   const {
     page,
     maxPages,
@@ -21,7 +23,7 @@ const Questions = () => {
     firstPage,
     lastPage,
     getContent,
-  } = usePagination(url, loadedQuestions.maxPages);
+  } = usePagination(url,-1);
 
   const getPaginatedContent = async () => {
     const json = await getContent();

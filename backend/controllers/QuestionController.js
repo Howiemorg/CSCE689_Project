@@ -25,37 +25,72 @@ class QuestionController {
       startingAggregationWithPagination.push({ $limit: limit });
     }
 
-    let docs = await Question.aggregate([
-      {
-        $facet: {
-          questions: [
-            ...startingAggregationWithPagination,
-            {
-              $lookup: {
-                from: "Users",
-                localField: "_id",
-                foreignField: "solvedQuestions.questionId",
-                as: "questionsSolved",
+    console.log(req.query);
+
+    let docs = null;
+    if (req.query.email) {
+      const email = req.query.email;
+      console.log(email);
+      docs = await Question.aggregate([
+        {
+          $lookup: {
+            from: "Users",
+            let: { questionId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$email", email] },
+                      {
+                        $in: ["$$questionId", "$solvedQuestions.questionId"],
+                      },
+                    ],
+                  },
+                },
               },
-            },
-            {
-              $addFields: {
-                solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
-              },
-            },
-            {
-              $project: {
-                quizzesSolved: 0,
-              },
-            },
-          ],
-          maxPages: [{ $count: "value" }],
+            ],
+            as: "questionsSolved",
+          },
         },
-      },
-    ]);
+        {
+          $facet: {
+            questions: [
+              ...startingAggregationWithPagination,
+              {
+                $addFields: {
+                  solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
+                },
+              },
+              {
+                $project: {
+                  questionsSolved: 0,
+                },
+              },
+            ],
+            maxPages: [{ $count: "value" }],
+          },
+        },
+      ]);
+
+      console.log(docs[0].questions);
+    } else {
+      docs = await Question.aggregate([
+        {
+          $match: { topic: req.params.topicId },
+        },
+        {
+          $facet: {
+            questions: startingAggregationWithPagination,
+            maxPages: [{ $count: "value" }],
+          },
+        },
+      ]);
+
+      console.log(docs);
+    }
 
     docs = docs[0];
-
     if (!docs.questions.length) {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
@@ -93,48 +128,84 @@ class QuestionController {
       startingAggregationWithPagination.push({ $limit: limit });
     }
 
-    let docs = await Question.aggregate([
-      {
-        $match: {
-          topic: req.params.topicId,
+    console.log(req.query);
+
+    let docs = null;
+    if (req.query.email) {
+      const email = req.query.email;
+      console.log(email);
+      docs = await Question.aggregate([
+        {
+          $match: {
+            topic: req.params.topicId,
+          },
         },
-      },
-      {
-        $facet: {
-          questions: [
-            ...startingAggregationWithPagination,
-            {
-              $lookup: {
-                from: "Users",
-                localField: "_id",
-                foreignField: "solvedQuestions.questionId",
-                as: "questionsSolved",
+        {
+          $lookup: {
+            from: "Users",
+            let: { questionId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$email", email] },
+                      {
+                        $in: ["$$questionId", "$solvedQuestions.questionId"],
+                      },
+                    ],
+                  },
+                },
               },
-            },
-            {
-              $addFields: {
-                solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
-              },
-            },
-            {
-              $project: {
-                quizzesSolved: 0,
-              },
-            },
-          ],
-          maxPages: [{ $count: "value" }],
+            ],
+            as: "questionsSolved",
+          },
         },
-      },
-    ]);
+        {
+          $facet: {
+            questions: [
+              ...startingAggregationWithPagination,
+              {
+                $addFields: {
+                  solved: { $gt: [{ $size: "$questionsSolved" }, 0] },
+                },
+              },
+              {
+                $project: {
+                  questionsSolved: 0,
+                },
+              },
+            ],
+            maxPages: [{ $count: "value" }],
+          },
+        },
+      ]);
+
+      console.log(docs[0].questions);
+    } else {
+      docs = await Question.aggregate([
+        {
+          $match: { topic: req.params.topicId },
+        },
+        {
+          $facet: {
+            questions: startingAggregationWithPagination,
+            maxPages: [{ $count: "value" }],
+          },
+        },
+      ]);
+
+      console.log(docs);
+    }
 
     docs = docs[0];
-
     if (!docs.questions.length) {
       res.status(404).json({ error: "Couldn't find questions." });
       throw new HttpException(404, "Couldn't find questions");
     }
 
     docs.maxPages = docs.maxPages[0].value;
+
     if (limit !== null) docs.maxPages = Math.ceil(docs.maxPages / limit) - 1;
 
     res.json(docs);
