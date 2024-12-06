@@ -51,6 +51,9 @@ const Question = () => {
   const totalTestCases = question.output.tests.length;
 
   useEffect(() => {
+    setNumCorrect(null);
+    setNumFailed(null);
+    setOutputDetails([]);
     const savedAnswers = question.solved
       ? userInfo.solvedQuestions.find(
           (solvedQuestion) => solvedQuestion.questionId === question._id
@@ -120,7 +123,7 @@ const Question = () => {
     }
   };
   const handleCompile = async () => {
-    if(!language.id){
+    if (!language.id) {
       return;
     }
     setError("");
@@ -176,7 +179,7 @@ const Question = () => {
   };
 
   const checkStatus = async (tokens) => {
-    let numFailedCounter = 0
+    let numFailedCounter = 0;
     console.log(tokens);
     setOutputDetails([]);
     for (let index = 0; index < tokens.length; ++index) {
@@ -202,12 +205,17 @@ const Question = () => {
           }, 1000);
           return;
         } else {
-          console.log("OUTPUT:", atob(response.stdout))
-          const answer = response.stdout ? JSON.parse(atob(response.stdout)) : "";
+          console.log("OUTPUT:", atob(response.stdout));
+          const answer = response.stdout
+            ? JSON.parse(atob(response.stdout))
+            : "";
           const parsedOutput = JSON.parse(atob(response.expected_output));
-          const correct = answer && Array.isArray(answer) && Array.isArray(parsedOutput)
-            ? statusId === 3 || JSON.stringify(parsedOutput.sort()) === JSON.stringify(answer.sort())
-            : false;
+          const correct =
+            statusId === 3 ||
+            (answer && Array.isArray(answer) && Array.isArray(parsedOutput)
+              ? JSON.stringify(parsedOutput.sort()) ===
+                JSON.stringify(answer.sort())
+              : false);
           if (correct) {
             response.status.id = 3;
             setNumCorrect((prevNumCorrect) => prevNumCorrect + 1);

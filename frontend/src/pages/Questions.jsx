@@ -12,8 +12,8 @@ const Questions = () => {
   // const loadedQuestions = useRouteLoaderData("questions");
   const { userInfo }= useSelector((state) => state.user)
   const url = topicId
-    ? `http://localhost:8000/questions/getByTopic/${topicId}?email=${userInfo.email}&`
-    : `http://localhost:8000/questions/getAll?email=${userInfo.email}&`;
+    ? `http://localhost:8000/questions/getByTopic/${topicId}?${userInfo ? `email=${userInfo.email}&` : ""}`
+    : `http://localhost:8000/questions/getAll?${userInfo ? `email=${userInfo.email}&` : ""}`;
   const [questions, setQuestions] = useState([]);
   const {
     page,

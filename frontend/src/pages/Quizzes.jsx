@@ -13,8 +13,8 @@ const Quizzes = () => {
   const loadedQuizzes = useRouteLoaderData("quizzes");
   const { userInfo }= useSelector((state) => state.user)
   const url = topicId
-    ? `http://localhost:8000/quizzes/getByTopic/${topicId}?email=${userInfo.email}&`
-    : `http://localhost:8000/quizzes/getAll?email=${userInfo.email}&`;
+    ? `http://localhost:8000/quizzes/getByTopic/${topicId}?${userInfo ? `email=${userInfo.email}&` : ""}`
+    : `http://localhost:8000/quizzes/getAll?${userInfo ? `email=${userInfo.email}&` : ""}`;
   const [quizzes, setQuizzes] = useState([]);
   const {
     page,

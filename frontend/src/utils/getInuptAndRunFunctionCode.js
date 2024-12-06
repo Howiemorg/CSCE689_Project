@@ -118,7 +118,7 @@ const getInputAndRunFunctionCode = (
       let type = String(parameterNamesToTypes[key]);
       if (type.endsWith("[]")) {
         type = type.substring(0, type.length - 2);
-        input += `const arr = preprocessed_data[${index}];\nconst ${key} = arr.substring(1, arr.length-1).split(",").map((val) => {\n\treturn ${capitalize(
+        input += `const arrrrrrrrr = preprocessed_data[${index}];\nconst ${key} = arrrrrrrrr.substring(1, arrrrrrrrr.length-1).split(",").map((val) => {\n\treturn ${capitalize(
           type
         )}(val)})\n`;
       } else {
