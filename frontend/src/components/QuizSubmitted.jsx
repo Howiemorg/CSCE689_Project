@@ -27,8 +27,7 @@ const QuizSubmitted = ({
         </NavLink>
         <div className="text-center ">
           <h1>
-            Here's your results! (You can generate a similar question at the
-            bottom)
+            Here's your results!
           </h1>
           <p>You got {score}% correct</p>
         </div>

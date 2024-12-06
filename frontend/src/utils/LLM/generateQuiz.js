@@ -35,7 +35,7 @@ const schema = {
           },
           answer: {
             type: SchemaType.STRING,
-            description: "The correct answer choice from the list of choices.",
+            description: "The correct answer choice from the list of choices. IMPORTANT: Must be one of the choices and have the exact same value",
             nullable: false,
           },
         },

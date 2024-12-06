@@ -32,13 +32,13 @@ function printArrayHelper(arr) {
     }
 }
 
-const nestedArray1 = [];
-const nestedArray2 = [[1, 2], [3, 4], [5, 6]];
-const nestedArray3 = [[[1], [2]], [[3, 4]]];
+// const nestedArray1 = [];
+// const nestedArray2 = [[1, 2], [3, 4], [5, 6]];
+// const nestedArray3 = [[[1], [2]], [[3, 4]]];
 
-printArrayHelper(nestedArray1);
-console.log(); 
-printArrayHelper(nestedArray2);
-console.log();
-printArrayHelper(nestedArray3);
-console.log(); 
+// printArrayHelper(nestedArray1);
+// console.log(); 
+// printArrayHelper(nestedArray2);
+// console.log();
+// printArrayHelper(nestedArray3);
+// console.log(); 

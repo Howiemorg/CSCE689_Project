@@ -121,7 +121,6 @@ const Question = () => {
   };
   const handleCompile = async () => {
     if(!language.id){
-      console.log("LANGUAGEEEE:", language)
       return;
     }
     setError("");
@@ -205,8 +204,9 @@ const Question = () => {
         } else {
           console.log("OUTPUT:", atob(response.stdout))
           const answer = response.stdout ? JSON.parse(atob(response.stdout)) : "";
-          const correct = answer && Array.isArray(answer)
-            ? statusId === 3 || JSON.stringify(JSON.parse(atob(response.expected_output)).sort()) === JSON.stringify(answer.sort())
+          const parsedOutput = JSON.parse(atob(response.expected_output));
+          const correct = answer && Array.isArray(answer) && Array.isArray(parsedOutput)
+            ? statusId === 3 || JSON.stringify(parsedOutput.sort()) === JSON.stringify(answer.sort())
             : false;
           if (correct) {
             response.status.id = 3;
@@ -329,7 +329,7 @@ const Question = () => {
             }}
             nextTest={() => {
               setTestCase((prevTesCase) =>
-                Math.min(totalTestCases, prevTesCase + 1)
+                Math.min(totalTestCases - 1, prevTesCase + 1)
               );
             }}
             testNumber={testCase}
